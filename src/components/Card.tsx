@@ -22,16 +22,14 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
   } = useDraggable({
     id: card.id,
     disabled: !isDraggable || card.zone === Zone.GRAVEYARD,
-    activationConstraint: {
-      distance: 5,
-    },
   });
 
-
-  // Only allow tapping on battlefield cards (any type)
+  // Handle double-click for tapping
   const handleCardDoubleClick = (e: React.MouseEvent) => {
-    if (card.zone === Zone.BATTLEFIELD) {
+    console.log('Double click on card:', card.name);
+    if (card.zone === Zone.BATTLEFIELD || card.zone === Zone.LANDS) {
       e.stopPropagation();
+      e.preventDefault();
       tapCard(card.id);
     }
   };
@@ -50,7 +48,7 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
+      {...(isDraggable ? listeners : {})}
       className={`card relative w-[6vw] h-[8.4vw] max-w-[120px] max-h-[168px] min-w-[80px] min-h-[112px] rounded-lg border-2 border-gray-800 cursor-pointer shadow-lg overflow-hidden flex-shrink-0 ${
         isDragging ? 'dragging' : ''
       } ${card.tapped ? 'origin-center' : ''}`}
@@ -65,7 +63,6 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
       }}
       onDoubleClick={handleCardDoubleClick}
       whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
     >
       {/* Card background image */}
       {!imageError ? (
@@ -81,7 +78,7 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
       
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black bg-opacity-40" />
-      
+      listeners
       {/* Card content */}
       <div className="relative h-full p-2 flex flex-col justify-between">
         <div className="text-center">

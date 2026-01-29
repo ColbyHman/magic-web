@@ -1,5 +1,5 @@
 import React from 'react';
-import { DndContext, type DragEndEvent, type DragStartEvent, DragOverlay } from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, type DragStartEvent, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useGameStore, useCardById } from './store/gameStore';
 import { Battlefield } from './components/Battlefield';
 import { Card } from './components/Card';
@@ -8,6 +8,16 @@ import { Zone } from './types';
 function App() {
   const moveCard = useGameStore((state) => state.moveCard);
   const [activeCard, setActiveCard] = React.useState<string | null>(null);
+
+  // Configure sensors with activation constraints
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 8,
+      },
+    })
+  );
 
   const handleDragStart = (event: DragStartEvent) => {
     console.log('Drag started for card ID:', event.active.id);
@@ -37,13 +47,13 @@ function App() {
       targetZone = Zone.OPPONENT_BATTLEFIELD;
     } else if (targetZone === 'opponent-graveyard') {
       targetZone = Zone.GRAVEYARD;
+    } else if (targetZone === 'player-lands') {
+      targetZone = Zone.LANDS;
     }
 
     if (Object.values(Zone).includes(targetZone as Zone)) {
       if ((targetZone === Zone.BATTLEFIELD || targetZone === Zone.OPPONENT_BATTLEFIELD) && battlefieldHover) {
         moveCard(cardId, targetZone as Zone, battlefieldHover);
-      } else if (targetZone === 'player-lands') {
-        moveCard(cardId, Zone.LANDS);
       } else {
         moveCard(cardId, targetZone as Zone);
       }
@@ -55,6 +65,7 @@ function App() {
 
   return (
     <DndContext
+      sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
