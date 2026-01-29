@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDroppable } from '@dnd-kit/core';
+import { useDroppable, useDndMonitor } from '@dnd-kit/core';
 import { Zone as ZoneEnum } from '../types';
 import type { Zone as ZoneType } from '../types';
 import { useCardsInZone } from '../store/gameStore';
@@ -11,98 +11,152 @@ interface ZoneProps {
   className?: string;
   children?: React.ReactNode;
   id?: string;
+  setBattlefieldHover?: (cell: { row: number; col: number } | null) => void;
 }
 
 
 
-export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, className = '', children, id }) => {
+export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, className = '', children, id, setBattlefieldHover }) => {
   const cards = useCardsInZone(zone);
-  
-  const { isOver, setNodeRef } = useDroppable({
-    id: id || zone,
-  });
+  const [hoveredCell, setHoveredCellState] = React.useState<{ row: number; col: number } | null>(null);
+  const gridRef = React.useRef<HTMLDivElement>(null);
+  const { isOver, setNodeRef } = useDroppable({ id: id || zone });
 
-  const getZoneLayout = React.useMemo(() => {
-    switch (zone) {
-      case ZoneEnum.HAND:
-        return 'flex flex-row flex-wrap gap-2 justify-center items-center overflow-x-auto content-center min-h-full';
-      case ZoneEnum.BATTLEFIELD:
-        console.log('Battlefield cards:', cards.map(c => ({ id: c.id, name: c.name, position: c.position })));
-        return (
-          <div className="relative h-full">
-            {/* Row indicators */}
-            <div className="absolute top-0 left-0 right-0 h-1/2 border-b border-yellow-600 border-opacity-30 pointer-events-none z-10">
-              <div className="text-center text-white text-xs font-bold mt-1">FRONT ROW</div>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none z-10">
-              <div className="text-center text-white text-xs font-bold mb-3">BACK ROW</div>
-            </div>
-            
-            {/* Playmat grid with individual droppable cells */}
-            <div className="grid grid-rows-2 grid-cols-10 gap-1 p-4 pt-8 place-items-center content-start min-h-full">
-              {children}
-              
-              {/* Render empty grid cells for direct drops */}
-              {Array.from({ length: 2 }, (_, row) => (
-                Array.from({ length: 10 }, (_, col) => {
-                  const isOccupied = cards.some(card => 
-                    card.position?.col === col && card.position?.row === row
-                  );
-                  
-                  return (
-                    <div
-                      key={`cell-${row}-${col}`}
-                      className={`border border-dashed rounded min-h-[84px] min-w-[60px] flex items-center justify-center ${
-                        isOccupied ? 'border-transparent' : 'border-white border-opacity-20'
-                      }`}
-                      style={{
-                        gridColumn: col + 1,
-                        gridRow: row + 1,
-                      }}
-                    >
-                      {!isOccupied && (
-                        <div className="text-white text-xs opacity-30">
-                          {row === 0 ? 'F' : 'B'}{col + 1}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              )).flat()}
-              
-              {/* Render existing cards on top */}
-              {cards.map((card) => {
-                const col = card.position?.col !== undefined ? card.position.col + 1 : 'auto';
-                const row = card.position?.row !== undefined ? card.position.row + 1 : 'auto';
-                console.log(`Card ${card.id} at col: ${col}, row: ${row}, position:`, card.position);
-                return (
-                  <div 
+  // Only for battlefield: render grid, handle hover, stack offsets, and preview
+  if (zone === ZoneEnum.BATTLEFIELD) {
+    // Responsive grid: columns/rows by screen size (CSS only)
+    const rows = 2;
+    const cols = 10;
+    const grid = Array.from({ length: rows }, (_, row) =>
+      Array.from({ length: cols }, (_, col) => {
+        const stack = cards.filter(card => card.position?.row === row && card.position?.col === col);
+        return { row, col, stack };
+      })
+    );
+
+
+    // Update parent hover state
+    React.useEffect(() => {
+      if (setBattlefieldHover) setBattlefieldHover(hoveredCell);
+    }, [hoveredCell, setBattlefieldHover]);
+
+    // Robust dnd-kit pointer tracking: record initial pointer, update with delta
+
+    // Refs for all cell elements
+    const cellRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+    const initialPointer = React.useRef<{ x: number; y: number } | null>(null);
+
+    useDndMonitor({
+      onDragStart(event) {
+        // Record initial pointer position
+        if (event.activatorEvent && typeof event.activatorEvent.clientX === 'number' && typeof event.activatorEvent.clientY === 'number') {
+          initialPointer.current = { x: event.activatorEvent.clientX, y: event.activatorEvent.clientY };
+        } else {
+          initialPointer.current = null;
+        }
+      },
+      onDragMove(event) {
+        if (!initialPointer.current) return;
+        const pointer = {
+          x: initialPointer.current.x + (event.delta?.x ?? 0),
+          y: initialPointer.current.y + (event.delta?.y ?? 0),
+        };
+        // Find which cell contains the pointer
+        let found = false;
+        for (let i = 0; i < cellRefs.current.length; i++) {
+          const cell = cellRefs.current[i];
+          if (!cell) continue;
+          const rect = cell.getBoundingClientRect();
+          if (
+            pointer.x >= rect.left && pointer.x <= rect.right &&
+            pointer.y >= rect.top && pointer.y <= rect.bottom
+          ) {
+            // Map i to row/col
+            const row = Math.floor(i / cols);
+            const col = i % cols;
+            setHoveredCellState({ row, col });
+            found = true;
+            break;
+          }
+        }
+        if (!found) setHoveredCellState(null);
+      },
+      onDragEnd() {
+        setHoveredCellState(null);
+        initialPointer.current = null;
+      },
+      onDragCancel() {
+        setHoveredCellState(null);
+        initialPointer.current = null;
+      },
+    });
+
+    return (
+      <div
+        ref={setNodeRef}
+        className={`zone ${className} min-h-32 relative ring-2 ring-yellow-400 ring-opacity-60 flex items-center justify-center w-full h-full`}
+        data-zone-id={id || zone}
+      >
+        <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
+          {title} ({cards.length}) {isOver && '[OVER]'}
+        </div>
+        <div
+          ref={gridRef}
+          className="relative grid gap-1 bg-green-900 bg-opacity-30 w-full h-full"
+          style={{
+            gridTemplateColumns: `repeat(auto-fit, minmax(7vw, 1fr))`,
+            gridTemplateRows: `repeat(${rows}, 1fr)`,
+            aspectRatio: `${cols * 5} / ${rows * 7}`,
+            maxWidth: '100%',
+            maxHeight: '100%',
+          }}
+        >
+          {grid.flat().map(({ row, col, stack }, i) => (
+            <div
+              key={`cell-${row}-${col}`}
+              ref={el => cellRefs.current[i] = el}
+              className={`relative border border-dashed rounded flex items-center justify-center transition-all duration-75 bg-green-950/30`
+                + (hoveredCell && hoveredCell.row === row && hoveredCell.col === col ? ' border-yellow-400 bg-yellow-100 bg-opacity-20' : stack.length ? ' border-transparent' : ' border-white border-opacity-20')}
+              style={{ aspectRatio: '5/7', width: '100%', height: '100%' }}
+              onMouseEnter={() => setHoveredCellState({ row, col })}
+              onMouseLeave={() => setHoveredCellState(null)}
+            >
+              {/* Drop preview */}
+              {hoveredCell && hoveredCell.row === row && hoveredCell.col === col && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                  <div className="w-12 h-16 bg-yellow-300 bg-opacity-40 rounded shadow-lg border-2 border-yellow-400 border-dashed" />
+                </div>
+              )}
+              {/* Stack cards with offset */}
+              <div className="relative w-full h-full flex items-center justify-center" style={{ aspectRatio: '5/7', width: '90%', height: '90%' }}>
+                {stack.map((card, i) => (
+                  <div
                     key={card.id}
-                    className="absolute"
                     style={{
-                      gridColumn: col,
-                      gridRow: row,
+                      position: 'absolute',
+                      left: i * 8,
+                      top: i * 8,
+                      zIndex: 10 + i,
                     }}
                   >
                     <Card card={card} />
                   </div>
-                );
-              })}
+                ))}
+              </div>
+              {/* Cell label if empty */}
+              {!stack.length && (
+                <div className="text-white text-xs opacity-30 select-none pointer-events-none">
+                  {row === 0 ? 'F' : 'B'}{col + 1}
+                </div>
+              )}
             </div>
-          </div>
-        );
-      case ZoneEnum.OPPONENT_BATTLEFIELD:
-        console.log('Opponent battlefield cards:', cards);
-        return 'grid grid-rows-2 grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 xl:grid-cols-15 gap-1 p-4 place-items-center content-start min-h-full';
-      case ZoneEnum.LANDS:
-        return 'flex flex-row flex-wrap gap-2 justify-center items-center p-2 min-h-full content-center';
-      case ZoneEnum.GRAVEYARD:
-        return 'flex-col items-center justify-center p-2 min-h-full';
-      default:
-        return 'flex flex-wrap gap-2 min-h-full';
-    }
-  }, [zone]);
+          ))}
+        </div>
+      </div>
+    );
+  }
 
+  // All other zones: original rendering
   return (
     <div 
       ref={setNodeRef}
@@ -112,57 +166,11 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
       <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
         {title} ({cards.length}) {isOver && '[OVER]'}
       </div>
-      
-      <div
-        className={`w-full h-full ${getZoneLayout} ${
-          isOver ? 'drag-over' : ''
-        }`}
-      >
+      <div className={`w-full h-full flex flex-wrap gap-2 min-h-full ${isOver ? 'drag-over' : ''}`}>
         {children}
-        {zone === ZoneEnum.BATTLEFIELD && (
-          <>
-            {cards.map((card) => {
-              const col = card.position?.col !== undefined ? card.position.col + 1 : 'auto';
-              const row = card.position?.row !== undefined ? card.position.row + 1 : 'auto';
-              console.log(`Card ${card.id} at col: ${col}, row: ${row}, position:`, card.position);
-              return (
-                <div 
-                  key={card.id}
-                  className="contents"
-                  style={{
-                    gridColumn: col,
-                    gridRow: row,
-                  }}
-                >
-                  <Card card={card} />
-                </div>
-              );
-            })}
-          </>
-        )}
-        {zone === ZoneEnum.OPPONENT_BATTLEFIELD && (
-          <>
-            {cards.map((card) => (
-              <div 
-                key={card.id}
-                className="contents"
-                style={{
-                  gridColumn: card.position?.col !== undefined ? card.position.col + 1 : 'auto',
-                  gridRow: card.position?.row !== undefined ? card.position.row + 1 : 'auto',
-                }}
-              >
-                <Card card={card} />
-              </div>
-            ))}
-          </>
-        )}
-        {zone !== ZoneEnum.BATTLEFIELD && zone !== ZoneEnum.OPPONENT_BATTLEFIELD && (
-          <>
-            {cards.map((card) => (
-              <Card key={card.id} card={card} />
-            ))}
-          </>
-        )}
+        {cards.map((card) => (
+          <Card key={card.id} card={card} />
+        ))}
       </div>
     </div>
   );

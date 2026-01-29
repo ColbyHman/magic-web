@@ -24,9 +24,10 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
     disabled: !isDraggable || card.zone === Zone.GRAVEYARD,
   });
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Only allow tapping on battlefield cards
-    if (card.zone === Zone.BATTLEFIELD && card.type !== 'Land') {
+
+  // Only allow tapping on battlefield cards (any type)
+  const handleCardDoubleClick = (e: React.MouseEvent) => {
+    if (card.zone === Zone.BATTLEFIELD) {
       e.stopPropagation();
       tapCard(card.id);
     }
@@ -59,7 +60,7 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
         stiffness: 200,
         damping: 20,
       }}
-      onClick={handleCardClick}
+      onDoubleClick={handleCardDoubleClick}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >

@@ -32,9 +32,11 @@ export interface Card {
   position?: { row: number; col: number };
 }
 
+export interface BattlefieldProps {
+  setBattlefieldHover?: (cell: { row: number; col: number } | null) => void;
+}
+
 export interface GameActions {
-  playCard: (cardId: string) => void;
   tapCard: (cardId: string) => void;
-  moveCard: (cardId: string, toZone: Zone) => void;
-  moveCardWithPosition: (cardId: string, toZone: Zone, targetPosition?: { row: number; col: number }) => void;
+  moveCard: (cardId: string, toZone: Zone, position?: { row: number; col: number }) => void;
 }

@@ -7,28 +7,28 @@ import { Zone } from './types';
 
 function App() {
   const moveCard = useGameStore((state) => state.moveCard);
-  const moveCardWithPosition = useGameStore((state) => state.moveCardWithPosition);
   const [activeCard, setActiveCard] = React.useState<string | null>(null);
 
   const handleDragStart = (event: DragStartEvent) => {
+    console.log('Drag started for card ID:', event.active.id);
     setActiveCard(event.active.id as string);
   };
+
+  // Track battlefield hovered cell globally for drag-and-drop
+  const [battlefieldHover, setBattlefieldHover] = React.useState<{ row: number; col: number } | null>(null);
+  console.log('Battlefield hover cell:', battlefieldHover);
+  
+  // Pass setBattlefieldHover to ZoneComponent for battlefield
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveCard(null);
 
-    console.log('Drag ended:', { active: active.id, over: over?.id });
-
-    if (!over) {
-      console.log('No drop target');
-      return;
-    }
+    if (!over) return;
 
     const cardId = active.id as string;
     let targetZone = over.id as string;
 
-    // Handle special zone IDs
     if (targetZone === 'exile') {
       targetZone = Zone.GRAVEYARD;
     } else if (targetZone === 'player-battlefield') {
@@ -39,34 +39,16 @@ function App() {
       targetZone = Zone.GRAVEYARD;
     }
 
-    console.log('Target zone:', targetZone);
-
-    // Only allow valid moves
     if (Object.values(Zone).includes(targetZone as Zone)) {
-      console.log('Moving card:', cardId, 'to zone:', targetZone);
-      
-      // For battlefields, detect drop position within grid
-      if (targetZone === Zone.BATTLEFIELD || targetZone === Zone.OPPONENT_BATTLEFIELD) {
-        // Calculate grid position based on drop coordinates
-        // For now, use a simple heuristic based on where you drop
-        const dropX = (event as any).delta?.x || 0;
-        const dropY = (event as any).delta?.y || 0;
-        
-        // Estimate grid position (this is simplified - could be enhanced with actual drop coordinates)
-        const targetRow = dropY > 0 ? 1 : 0; // Positive Y = back row
-        const targetCol = Math.max(0, Math.min(9, Math.floor(dropX / 50) + 5)); // Estimate column
-        
-        console.log('Drop position:', { x: dropX, y: dropY, targetRow, targetCol });
-        
-        moveCardWithPosition(cardId, targetZone as Zone, { row: targetRow, col: targetCol });
+      if ((targetZone === Zone.BATTLEFIELD || targetZone === Zone.OPPONENT_BATTLEFIELD) && battlefieldHover) {
+        moveCard(cardId, targetZone as Zone, battlefieldHover);
       } else if (targetZone === 'player-lands') {
         moveCard(cardId, Zone.LANDS);
       } else {
         moveCard(cardId, targetZone as Zone);
       }
-    } else {
-      console.log('Invalid target zone:', targetZone);
     }
+    setBattlefieldHover(null);
   };
 
   const activeCardData = useCardById(activeCard || '');
@@ -77,7 +59,7 @@ function App() {
       onDragEnd={handleDragEnd}
     >
       <div className="w-full h-screen overflow-hidden">
-        <Battlefield />
+        <Battlefield setBattlefieldHover={setBattlefieldHover} />
       </div>
 
       <DragOverlay>

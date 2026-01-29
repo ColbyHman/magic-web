@@ -20,14 +20,47 @@ type GameStore = GameState & GameActions;
 export const useGameStore = create<GameStore>((set) => ({
   cards: mockCards,
 
-  playCard: (cardId: string) => {
-    set((state) => ({
-      cards: state.cards.map((card) =>
-        card.id === cardId
-          ? { ...card, zone: Zone.BATTLEFIELD, tapped: false }
-          : card
-      ),
-    }));
+
+
+  // moveCard now supports optional position for battlefield placement
+  moveCard: (cardId: string, toZone: ZoneType, position?: { row: number; col: number }) => {
+    console.log('Store moveCard:', cardId, 'to zone:', toZone, 'position:', position);
+    set((state) => {
+      if (toZone === Zone.BATTLEFIELD) {
+        // Use provided position if given, otherwise find next available
+        let pos = position;
+        if (!pos) {
+          const battlefieldCards = state.cards.filter(c => c.zone === Zone.BATTLEFIELD && c.position);
+          const occupied = battlefieldCards.map(c => c.position).filter(Boolean) as { row: number; col: number }[];
+          let found = false;
+          pos = { row: 0, col: 0 };
+          for (let row = 0; row < 2 && !found; row++) {
+            for (let col = 0; col < 10 && !found; col++) {
+              if (!occupied.some(p => p.row === row && p.col === col)) {
+                pos = { row, col };
+                found = true;
+              }
+            }
+          }
+        }
+        const newCards = state.cards.map((card) =>
+          card.id === cardId
+            ? { ...card, zone: toZone, tapped: false, position: pos }
+            : card
+        );
+        console.log('Updated cards:', newCards.filter(c => c.zone === toZone));
+        return { cards: newCards };
+      } else {
+        // Remove position if not on battlefield
+        const newCards = state.cards.map((card) =>
+          card.id === cardId
+            ? { ...card, zone: toZone, tapped: false, position: undefined }
+            : card
+        );
+        console.log('Updated cards:', newCards.filter(c => c.zone === toZone));
+        return { cards: newCards };
+      }
+    });
   },
 
   tapCard: (cardId: string) => {
@@ -40,73 +73,19 @@ export const useGameStore = create<GameStore>((set) => ({
     }));
   },
 
-  moveCard: (cardId: string, toZone: ZoneType) => {
-    console.log('Store moveCard:', cardId, 'to zone:', toZone);
-    set((state) => {
-      const newCards = state.cards.map((card) =>
-        card.id === cardId
-          ? { ...card, zone: toZone, tapped: false }
-          : card
-      );
-      console.log('Updated cards:', newCards.filter(c => c.zone === toZone));
-      return { cards: newCards };
-    });
-  },
-
-  moveCardWithPosition: (cardId: string, toZone: ZoneType, targetPosition?: { row: number; col: number }) => {
-    console.log('Smart positioning for:', cardId, 'to zone:', toZone, 'target position:', targetPosition);
-    set((state) => {
-      const zoneCards = state.cards.filter(c => c.zone === toZone);
-      const existingPositions = zoneCards.map(c => c.position).filter((p): p is NonNullable<typeof p> => p !== undefined);
-      
-      let targetRow = targetPosition ? targetPosition.row : 0; // Default to front row
-      let targetCol = targetPosition ? targetPosition.col : 0; // Default to first column
-      
-      // If position is already occupied, find nearest empty spot
-      if (existingPositions.some(p => p.row === targetRow && p.col === targetCol)) {
-        // Find closest empty position
-        let minDistance = Infinity;
-        let bestPosition = { row: 0, col: 0 };
-        
-        for (let row = 0; row <= 1; row++) {
-          for (let col = 0; col < 10; col++) {
-            if (!existingPositions.some(p => p.row === row && p.col === col)) {
-              const distance = Math.abs(row - targetRow) + Math.abs(col - targetCol);
-              if (distance < minDistance) {
-                minDistance = distance;
-                bestPosition = { row, col };
-              }
-            }
-          }
-        }
-        
-        targetRow = bestPosition.row;
-        targetCol = bestPosition.col;
-      }
-      
-      const newCards = state.cards.map((card) =>
-        card.id === cardId
-          ? { ...card, zone: toZone, tapped: false, position: { row: targetRow, col: targetCol } }
-          : card
-      );
-      
-      console.log('Updated cards with position:', newCards.filter(c => c.zone === toZone));
-      return { cards: newCards };
-    });
-  },
 }));
 
 // Derived selectors for cleaner component code
 export const useCardsInZone = (zone: ZoneType) => {
   const cards = useGameStore((state) => state.cards);
-  return React.useMemo(() => 
+  return React.useMemo(() =>
     cards.filter((card) => card.zone === zone)
-  , [cards, zone]);
+    , [cards, zone]);
 };
 
 export const useCardById = (cardId: string) => {
   const cards = useGameStore((state) => state.cards);
-  return React.useMemo(() => 
+  return React.useMemo(() =>
     cards.find((card) => card.id === cardId)
-  , [cards, cardId]);
+    , [cards, cardId]);
 };
