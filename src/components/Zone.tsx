@@ -50,8 +50,10 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
       onDragStart(event) {
         // Record initial pointer position
         if (event.activatorEvent && typeof event.activatorEvent.clientX === 'number' && typeof event.activatorEvent.clientY === 'number') {
+          console.log('Recording initial pointer position:', event.activatorEvent.clientX, event.activatorEvent.clientY);
           initialPointer.current = { x: event.activatorEvent.clientX, y: event.activatorEvent.clientY };
         } else {
+          console.log('No valid activatorEvent for drag start');
           initialPointer.current = null;
         }
       },

@@ -22,6 +22,9 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
   } = useDraggable({
     id: card.id,
     disabled: !isDraggable || card.zone === Zone.GRAVEYARD,
+    activationConstraint: {
+      distance: 5,
+    },
   });
 
 
