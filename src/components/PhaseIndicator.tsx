@@ -42,7 +42,7 @@ export const PhaseIndicator: React.FC = React.memo(() => {
 
   const [isExpanded, setIsExpanded] = React.useState(false);
 
-  const showEndButton = currentPhase === 'main1' || currentPhase === 'main2';
+  const showEndButton = currentPhase === 'main1';
   const showPassButton = currentPhase === 'ending' && currentStep === 'cleanup';
 
   // Determine the next step button text
