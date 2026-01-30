@@ -30,10 +30,13 @@ export interface Card {
   zone: Zone;
   tapped: boolean;
   position?: { row: number; col: number };
+  imageUrl?: string;
 }
 
 export interface BattlefieldProps {
   setBattlefieldHover?: (cell: { row: number; col: number } | null) => void;
+  setHandHover?: (cell: { row: number; col: number } | null) => void;
+  setLandsHover?: (cell: { row: number; col: number } | null) => void;
 }
 
 export interface GameActions {

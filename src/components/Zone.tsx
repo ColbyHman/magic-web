@@ -12,18 +12,19 @@ interface ZoneProps {
   children?: React.ReactNode;
   id?: string;
   setBattlefieldHover?: (cell: { row: number; col: number } | null) => void;
+  isDroppable?: boolean;
 }
 
 
 
-export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, className = '', children, id, setBattlefieldHover }) => {
+export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, className = '', children, id, setBattlefieldHover, isDroppable = true }) => {
   const cards = useCardsInZone(zone);
   const [hoveredCell, setHoveredCellState] = React.useState<{ row: number; col: number } | null>(null);
   const gridRef = React.useRef<HTMLDivElement>(null);
-  const { isOver, setNodeRef } = useDroppable({ id: id || zone });
+  const { isOver, setNodeRef } = useDroppable({ id: id || zone, disabled: !isDroppable });
 
-  // Only for battlefield: render grid, handle hover, stack offsets, and preview
-  if (zone === ZoneEnum.BATTLEFIELD) {
+  // Battlefields: render grid with hover, stack offsets, and preview
+  if (zone === ZoneEnum.BATTLEFIELD || zone === ZoneEnum.OPPONENT_BATTLEFIELD) {
     // Responsive grid: columns/rows by screen size (CSS only)
     const rows = 2;
     const cols = 10;
@@ -106,11 +107,11 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
           ref={gridRef}
           className="relative grid gap-1 bg-green-900 bg-opacity-30 w-full h-full"
           style={{
-            gridTemplateColumns: `repeat(auto-fit, minmax(7vw, 1fr))`,
+            gridTemplateColumns: `repeat(${cols}, minmax(60px, 1fr))`,
             gridTemplateRows: `repeat(${rows}, 1fr)`,
-            aspectRatio: `${cols * 5} / ${rows * 7}`,
             maxWidth: '100%',
             maxHeight: '100%',
+            minHeight: '100%',
           }}
         >
           {grid.flat().map(({ row, col, stack }, i) => (
@@ -120,7 +121,10 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
               className={`relative border border-dashed rounded flex items-center justify-center transition-all duration-75 bg-green-950/30`
                 + (hoveredCell && hoveredCell.row === row && hoveredCell.col === col ? ' border-yellow-400 bg-yellow-100 bg-opacity-20' : stack.length ? ' border-transparent' : ' border-white border-opacity-20')}
               style={{ aspectRatio: '5/7', width: '100%', height: '100%' }}
-              onMouseEnter={() => setHoveredCellState({ row, col })}
+              onMouseEnter={() => {
+                setHoveredCellState({ row, col });
+                console.log(`Hovering over cell [${row},${col}] - Stack:`, stack.length, 'cards:', stack.map(c => c.name));
+              }}
               onMouseLeave={() => setHoveredCellState(null)}
             >
               {/* Drop preview */}
@@ -158,21 +162,137 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
     );
   }
 
+  // Hand and Lands: render cards in a grid layout with position support
+  if (zone === ZoneEnum.HAND || zone === ZoneEnum.LANDS) {
+    // Create a grid for hand/lands - 1 row, many columns
+    const rows = 1;
+    const cols = zone === ZoneEnum.HAND ? 12 : 10; // Hand can hold more cards
+    const grid = Array.from({ length: rows }, (_, row) =>
+      Array.from({ length: cols }, (_, col) => {
+        const stack = cards.filter(card => card.position?.row === row && card.position?.col === col);
+        return { row, col, stack };
+      })
+    );
+
+    // Refs for all cell elements
+    const cellRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+    const initialPointer = React.useRef<{ x: number; y: number } | null>(null);
+
+    useDndMonitor({
+      onDragStart(event) {
+        // Record initial pointer position
+        if (event.activatorEvent && 'clientX' in event.activatorEvent && 'clientY' in event.activatorEvent && typeof event.activatorEvent.clientX === 'number' && typeof event.activatorEvent.clientY === 'number') {
+          console.log(`Recording initial pointer position for ${zone}:`, event.activatorEvent.clientX, event.activatorEvent.clientY);
+          initialPointer.current = { x: event.activatorEvent.clientX, y: event.activatorEvent.clientY };
+        } else {
+          initialPointer.current = null;
+        }
+      },
+      onDragMove(event) {
+        if (!initialPointer.current) return;
+        const pointer = {
+          x: initialPointer.current.x + (event.delta?.x ?? 0),
+          y: initialPointer.current.y + (event.delta?.y ?? 0),
+        };
+        // Find which cell contains the pointer
+        let found = false;
+        for (let i = 0; i < cellRefs.current.length; i++) {
+          const cell = cellRefs.current[i];
+          if (!cell) continue;
+          const rect = cell.getBoundingClientRect();
+          if (
+            pointer.x >= rect.left && pointer.x <= rect.right &&
+            pointer.y >= rect.top && pointer.y <= rect.bottom
+          ) {
+            // Map i to row/col
+            const row = Math.floor(i / cols);
+            const col = i % cols;
+            setHoveredCellState({ row, col });
+            found = true;
+            break;
+          }
+        }
+        if (!found) setHoveredCellState(null);
+      },
+      onDragEnd() {
+        setHoveredCellState(null);
+        initialPointer.current = null;
+      },
+      onDragCancel() {
+        setHoveredCellState(null);
+        initialPointer.current = null;
+      },
+    });
+
+    // Update parent hover state
+    React.useEffect(() => {
+      if (setBattlefieldHover) setBattlefieldHover(hoveredCell);
+    }, [hoveredCell, setBattlefieldHover]);
+
+    return (
+      <div
+        ref={setNodeRef}
+        className={`zone ${className} relative ${isOver ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}`}
+        data-zone-id={id || zone}
+      >
+        <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
+          {title} ({cards.length}) {isOver && '[OVER]'}
+        </div>
+        <div 
+          className="relative grid gap-1 w-full h-full p-2"
+          style={{
+            gridTemplateColumns: `repeat(${cols}, minmax(60px, 1fr))`,
+            gridTemplateRows: `repeat(${rows}, 1fr)`,
+          }}
+        >
+          {grid.flat().map(({ row, col, stack }, i) => (
+            <div
+              key={`cell-${row}-${col}`}
+              ref={el => { cellRefs.current[i] = el; }}
+              className={`relative border border-dashed rounded flex items-center justify-center ${zone === ZoneEnum.HAND ? 'bg-blue-900/20' : 'bg-green-900/20'} ${hoveredCell && hoveredCell.row === row && hoveredCell.col === col ? 'border-yellow-400 bg-yellow-100 bg-opacity-20' : stack.length ? 'border-transparent' : 'border-white/20'}`}
+              style={{ aspectRatio: '5/7' }}
+              onMouseEnter={() => setHoveredCellState({ row, col })}
+              onMouseLeave={() => setHoveredCellState(null)}
+            >
+              {/* Stack cards with offset */}
+              <div className="relative w-full h-full flex items-center justify-center" style={{ aspectRatio: '5/7', width: '90%', height: '90%' }}>
+                {stack.map((card, index) => (
+                  <div
+                    key={card.id}
+                    style={{
+                      position: 'absolute',
+                      left: index * 4, // Smaller offset for hand/lands
+                      top: index * 4,
+                      zIndex: 10 + index,
+                    }}
+                  >
+                    <Card card={card} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   // All other zones: original rendering
   return (
     <div 
       ref={setNodeRef}
-      className={`zone ${className} min-h-32 relative ${isOver ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}`}
+      className={`zone ${className} relative ${isOver ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}`}
       data-zone-id={id || zone}
     >
       <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
         {title} ({cards.length}) {isOver && '[OVER]'}
       </div>
-      <div className={`w-full h-full flex flex-wrap gap-2 min-h-full ${isOver ? 'drag-over' : ''}`}>
+      <div className={`w-full h-full flex flex-wrap gap-2 ${isOver ? 'drag-over' : ''} p-2 overflow-auto`}>
         {children}
-        {cards.map((card) => (
-          <Card key={card.id} card={card} />
-        ))}
+        {cards.map((card) => {
+          console.log('Rendering Card component:', card.name, 'in zone:', zone);
+          return <Card key={card.id} card={card} />;
+        })}
       </div>
     </div>
   );
