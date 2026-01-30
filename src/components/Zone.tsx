@@ -49,7 +49,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
     useDndMonitor({
       onDragStart(event) {
         // Record initial pointer position
-        if (event.activatorEvent && typeof event.activatorEvent.clientX === 'number' && typeof event.activatorEvent.clientY === 'number') {
+        if (event.activatorEvent && 'clientX' in event.activatorEvent && 'clientY' in event.activatorEvent && typeof event.activatorEvent.clientX === 'number' && typeof event.activatorEvent.clientY === 'number') {
           console.log('Recording initial pointer position:', event.activatorEvent.clientX, event.activatorEvent.clientY);
           initialPointer.current = { x: event.activatorEvent.clientX, y: event.activatorEvent.clientY };
         } else {
@@ -116,7 +116,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
           {grid.flat().map(({ row, col, stack }, i) => (
             <div
               key={`cell-${row}-${col}`}
-              ref={el => cellRefs.current[i] = el}
+              ref={el => { cellRefs.current[i] = el; }}
               className={`relative border border-dashed rounded flex items-center justify-center transition-all duration-75 bg-green-950/30`
                 + (hoveredCell && hoveredCell.row === row && hoveredCell.col === col ? ' border-yellow-400 bg-yellow-100 bg-opacity-20' : stack.length ? ' border-transparent' : ' border-white border-opacity-20')}
               style={{ aspectRatio: '5/7', width: '100%', height: '100%' }}
