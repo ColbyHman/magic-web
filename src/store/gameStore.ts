@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import React from 'react';
-import type { Card, GameState, GameActions, Zone as ZoneType } from '../types';
-import { Zone } from '../types';
+import type { Card, GameState, GameActions, Zone as ZoneType, Phase, Step } from '../types';
+import { Zone, Phase as PhaseEnum, Step as StepEnum } from '../types';
 
 // Mock card data for POC
 const mockCards: Card[] = [
@@ -19,6 +19,8 @@ type GameStore = GameState & GameActions;
 
 export const useGameStore = create<GameStore>((set) => ({
   cards: mockCards,
+  currentPhase: PhaseEnum.BEGINNING,
+  currentStep: StepEnum.UNTAP,
 
 
 
@@ -70,6 +72,72 @@ export const useGameStore = create<GameStore>((set) => ({
           ? { ...card, tapped: !card.tapped }
           : card
       ),
+    }));
+  },
+
+  advanceStep: () => {
+    set((state) => {
+      const { currentPhase, currentStep } = state;
+      let newPhase = currentPhase;
+      let newStep = currentStep;
+
+      // Define step sequences for each phase
+      const stepSequence: Record<Phase, Step[]> = {
+        [PhaseEnum.BEGINNING]: [StepEnum.UNTAP, StepEnum.UPKEEP, StepEnum.DRAW],
+        [PhaseEnum.MAIN_1]: [StepEnum.MAIN],
+        [PhaseEnum.COMBAT]: [
+          StepEnum.BEGIN_COMBAT,
+          StepEnum.DECLARE_ATTACKERS,
+          StepEnum.DECLARE_BLOCKERS,
+          StepEnum.COMBAT_DAMAGE,
+          StepEnum.END_COMBAT,
+        ],
+        [PhaseEnum.MAIN_2]: [StepEnum.MAIN],
+        [PhaseEnum.ENDING]: [StepEnum.END_STEP, StepEnum.CLEANUP],
+      };
+
+      const phaseOrder: Phase[] = [
+        PhaseEnum.BEGINNING,
+        PhaseEnum.MAIN_1,
+        PhaseEnum.COMBAT,
+        PhaseEnum.MAIN_2,
+        PhaseEnum.ENDING,
+      ];
+
+      const currentSteps = stepSequence[currentPhase];
+      const currentStepIndex = currentSteps.indexOf(currentStep);
+
+      // If not at end of current phase's steps
+      if (currentStepIndex < currentSteps.length - 1) {
+        newStep = currentSteps[currentStepIndex + 1];
+      } else {
+        // Move to next phase
+        const currentPhaseIndex = phaseOrder.indexOf(currentPhase);
+        if (currentPhaseIndex < phaseOrder.length - 1) {
+          newPhase = phaseOrder[currentPhaseIndex + 1];
+          newStep = stepSequence[newPhase][0];
+        } else {
+          // Wrap back to beginning
+          newPhase = PhaseEnum.BEGINNING;
+          newStep = StepEnum.UNTAP;
+        }
+      }
+
+      return { currentPhase: newPhase, currentStep: newStep };
+    });
+  },
+
+  skipToEnd: () => {
+    set(() => ({
+      currentPhase: PhaseEnum.ENDING,
+      currentStep: StepEnum.END_STEP,
+    }));
+  },
+
+  passToNextTurn: () => {
+    set(() => ({
+      currentPhase: PhaseEnum.BEGINNING,
+      currentStep: StepEnum.UNTAP,
     }));
   },
 
