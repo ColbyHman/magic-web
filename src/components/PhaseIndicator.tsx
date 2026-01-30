@@ -42,8 +42,38 @@ export const PhaseIndicator: React.FC = React.memo(() => {
 
   const [isExpanded, setIsExpanded] = React.useState(false);
 
-  const showEndButton = currentPhase === 'main1' || currentPhase === 'main2' || currentPhase === 'combat';
-  const showPassButton = currentPhase === 'ending' && currentStep === 'end_step';
+  const showEndButton = currentPhase === 'main1' || currentPhase === 'main2';
+  const showPassButton = currentPhase === 'ending' && currentStep === 'cleanup';
+
+  // Determine the next step button text
+  const getNextStepText = (): string => {
+    if (showPassButton) return 'Pass';
+    
+    const nextStepMap: Record<string, string> = {
+      // Beginning Phase
+      'beginning-untap': 'Upkeep',
+      'beginning-upkeep': 'Draw',
+      'beginning-draw': 'Main Phase 1',
+      // Main Phase 1
+      'main1-main': 'Enter Combat',
+      // Combat Phase
+      'combat-begin_combat': 'Declare Attackers',
+      'combat-declare_attackers': 'Declare Blockers',
+      'combat-declare_blockers': 'Combat Damage',
+      'combat-combat_damage': 'End Combat',
+      'combat-end_combat': 'Main Phase 2',
+      // Main Phase 2
+      'main2-main': 'End Step',
+      // Ending Phase
+      'ending-end_step': 'Cleanup',
+      'ending-cleanup': 'Pass',
+    };
+
+    const key = `${currentPhase}-${currentStep}`;
+    return nextStepMap[key] || 'Next Step';
+  };
+
+  const nextStepButtonText = getNextStepText();
 
   return (
     <motion.div
@@ -54,23 +84,54 @@ export const PhaseIndicator: React.FC = React.memo(() => {
     >
       <div className="bg-gradient-to-r from-gray-900 via-green-900 to-gray-900 border-2 border-yellow-600 border-opacity-60 rounded-lg shadow-2xl backdrop-blur-sm bg-opacity-90">
         {/* Collapsed View */}
-        <div
-          className="px-6 py-3 cursor-pointer select-none flex items-center gap-4"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <div className="text-yellow-400 font-bold text-lg">
-            {phaseNames[currentPhase]}
-          </div>
-          <div className="text-white text-sm">
-            {stepNames[currentStep]}
-          </div>
-          <motion.div
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-            className="text-yellow-400 text-xl"
+        <div className="px-6 py-3 flex items-center gap-4">
+          <div
+            className="cursor-pointer select-none flex items-center gap-4 flex-1"
+            onClick={() => setIsExpanded(!isExpanded)}
           >
-            ▼
-          </motion.div>
+            <div className="text-yellow-400 font-bold text-lg">
+              {phaseNames[currentPhase]}
+            </div>
+            <div className="text-white text-sm">
+              {stepNames[currentStep]}
+            </div>
+            <motion.div
+              animate={{ rotate: isExpanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-yellow-400 text-xl"
+            >
+              ▼
+            </motion.div>
+          </div>
+
+          {/* Action Buttons - Always Visible */}
+          <div className="flex gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                showPassButton ? passToNextTurn() : advanceStep();
+              }}
+              className={`${
+                showPassButton 
+                  ? 'bg-purple-700 hover:bg-purple-600' 
+                  : 'bg-green-700 hover:bg-green-600'
+              } text-white font-bold py-2 px-4 rounded transition-colors text-sm`}
+            >
+              {nextStepButtonText}
+            </button>
+
+            {showEndButton && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  skipToEnd();
+                }}
+                className="bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors text-sm"
+              >
+                End
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Expanded View */}
@@ -83,7 +144,7 @@ export const PhaseIndicator: React.FC = React.memo(() => {
               transition={{ duration: 0.2 }}
               className="overflow-hidden border-t border-yellow-600 border-opacity-30"
             >
-              <div className="px-6 py-4 space-y-3">
+              <div className="px-6 py-4">
                 {/* All Steps for Current Phase */}
                 <div className="space-y-1">
                   {phaseSteps[currentPhase].map((step) => (
@@ -98,43 +159,6 @@ export const PhaseIndicator: React.FC = React.memo(() => {
                       {stepNames[step]}
                     </div>
                   ))}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      advanceStep();
-                    }}
-                    className="flex-1 bg-green-700 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition-colors"
-                  >
-                    Next Step
-                  </button>
-
-                  {showEndButton && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        skipToEnd();
-                      }}
-                      className="flex-1 bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors"
-                    >
-                      End
-                    </button>
-                  )}
-
-                  {showPassButton && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        passToNextTurn();
-                      }}
-                      className="flex-1 bg-purple-700 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded transition-colors"
-                    >
-                      Pass
-                    </button>
-                  )}
                 </div>
               </div>
             </motion.div>
