@@ -13,7 +13,7 @@ const mockCards: Card[] = [
     type: 'Legendary Creature — Symbiote Villain', 
     zone: Zone.HAND, 
     tapped: false, 
-    position: { row: 0, col: 0 },
+    position: { row: 0, col: 2 },
     imageUrl: 'https://cards.scryfall.io/large/front/a/b/ab3d51a4-40f0-4606-b5f9-2686c12fd54b.jpg?1757377205'
   },
   { 
@@ -23,7 +23,7 @@ const mockCards: Card[] = [
     type: 'Legendary Creature — Human', 
     zone: Zone.HAND, 
     tapped: false, 
-    position: { row: 0, col: 1 },
+    position: { row: 0, col: 3},
     imageUrl: 'https://cards.scryfall.io/large/front/3/3/3351cae2-87be-4438-ba58-f4f4aff2416c.jpg?1721423999'
   },
   { 
@@ -33,7 +33,7 @@ const mockCards: Card[] = [
     type: 'Instant', 
     zone: Zone.HAND, 
     tapped: false, 
-    position: { row: 0, col: 2 },
+    position: { row: 0, col: 4 },
     imageUrl: 'https://cards.scryfall.io/large/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.jpg?1706239968'
   },
   { 
@@ -43,7 +43,7 @@ const mockCards: Card[] = [
     type: 'Instant', 
     zone: Zone.HAND, 
     tapped: false, 
-    position: { row: 0, col: 3 },
+    position: { row: 0, col: 6 },
     imageUrl: 'https://cards.scryfall.io/large/front/4/f/4f616706-ec97-4923-bb1e-11a69fbaa1f8.jpg?1751282477'
   },
   { 
@@ -53,7 +53,7 @@ const mockCards: Card[] = [
     type: 'Sorcery', 
     zone: Zone.HAND, 
     tapped: false, 
-    position: { row: 0, col: 4 },
+    position: { row: 0, col: 7 },
     imageUrl: 'https://cards.scryfall.io/large/front/d/f/df45a43e-a5b7-4fd4-873b-7b3c021be198.jpg?1674136553'
   },
   { 
@@ -63,7 +63,7 @@ const mockCards: Card[] = [
     type: 'Creature — Goblin Scout', 
     zone: Zone.HAND, 
     tapped: false, 
-    position: { row: 0, col: 5 },
+    position: { row: 0, col: 8 },
     imageUrl: 'https://cards.scryfall.io/large/front/3/c/3c0f5411-1940-410f-96ce-6f92513f753a.jpg?1599706366'
   },
   { 
@@ -73,7 +73,7 @@ const mockCards: Card[] = [
     type: 'Basic Land — Forest', 
     zone: Zone.HAND, 
     tapped: false, 
-    position: { row: 0, col: 6 },
+    position: { row: 0, col: 9 },
     imageUrl: 'https://cards.scryfall.io/large/front/b/4/b460f5f7-c7c9-400c-8419-23d614f45bf9.jpg?1767773926'
   },
   
@@ -117,7 +117,7 @@ const mockCards: Card[] = [
     type: 'Basic Land — Mountain', 
     zone: Zone.LANDS, 
     tapped: false, 
-    position: { row: 0, col: 0 },
+    position: { row: 0, col: 3 },
     imageUrl: 'https://cards.scryfall.io/large/front/2/9/295b92bc-d66f-45d8-9bbe-5f5f13e39fd4.jpg?1767773878'
   },
   { 
@@ -127,7 +127,7 @@ const mockCards: Card[] = [
     type: 'Basic Land — Island', 
     zone: Zone.LANDS, 
     tapped: false, 
-    position: { row: 0, col: 1 },
+    position: { row: 0, col: 4 },
     imageUrl: 'https://cards.scryfall.io/large/front/5/7/57d9b053-ed45-41f3-a0ab-0a08c41f587a.jpg?1760102991'
   },
   { 
@@ -137,7 +137,7 @@ const mockCards: Card[] = [
     type: 'Basic Land — Forest', 
     zone: Zone.LANDS, 
     tapped: false, 
-    position: { row: 0, col: 2 },
+    position: { row: 0, col: 5 },
     imageUrl: 'https://cards.scryfall.io/large/front/4/b/4b535df5-f79c-4ab5-9b2f-cbbb5adad70a.jpg?1758801202'
   },
   { 
@@ -147,7 +147,7 @@ const mockCards: Card[] = [
     type: 'Basic Land — Mountain', 
     zone: Zone.LANDS, 
     tapped: false, 
-    position: { row: 0, col: 3 },
+    position: { row: 0, col: 6 },
     imageUrl: 'https://cards.scryfall.io/large/front/2/9/295b92bc-d66f-45d8-9bbe-5f5f13e39fd4.jpg?1767773878'
   },
 ];

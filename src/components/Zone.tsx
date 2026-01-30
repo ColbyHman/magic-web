@@ -101,7 +101,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
         data-zone-id={id || zone}
       >
         <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
-          {title} ({cards.length}) {isOver && '[OVER]'}
+           {title} {/* ({cards.length}) {isOver && '[OVER]'} */}
         </div>
         <div
           ref={gridRef}
@@ -118,19 +118,19 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
             <div
               key={`cell-${row}-${col}`}
               ref={el => { cellRefs.current[i] = el; }}
-              className={`relative border border-dashed rounded flex items-center justify-center transition-all duration-75 bg-green-950/30`
+              className={`relative rounded flex items-center justify-center transition-all duration-75 bg-green-950/30`
                 + (hoveredCell && hoveredCell.row === row && hoveredCell.col === col ? ' border-yellow-400 bg-yellow-100 bg-opacity-20' : stack.length ? ' border-transparent' : ' border-white border-opacity-20')}
               style={{ aspectRatio: '5/7', width: '100%', height: '100%' }}
               onMouseEnter={() => {
                 setHoveredCellState({ row, col });
-                console.log(`Hovering over cell [${row},${col}] - Stack:`, stack.length, 'cards:', stack.map(c => c.name));
+                // console.log(`Hovering over cell [${row},${col}] - Stack:`, stack.length, 'cards:', stack.map(c => c.name));
               }}
               onMouseLeave={() => setHoveredCellState(null)}
             >
               {/* Drop preview */}
               {hoveredCell && hoveredCell.row === row && hoveredCell.col === col && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                  <div className="w-12 h-16 bg-yellow-300 bg-opacity-40 rounded shadow-lg border-2 border-yellow-400 border-dashed" />
+                  {/* <div className="w-20 h-28 bg-yellow-300 bg-opacity-40 rounded shadow-lg border-2 border-yellow-400 border-dashed" /> */}
                 </div>
               )}
               {/* Stack cards with offset */}
@@ -142,7 +142,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
                       position: 'absolute',
                       left: i * 8,
                       top: i * 8,
-                      zIndex: 10 + i,
+                      zIndex: 30 + i,
                     }}
                   >
                     <Card card={card} />
@@ -152,7 +152,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
               {/* Cell label if empty */}
               {!stack.length && (
                 <div className="text-white text-xs opacity-30 select-none pointer-events-none">
-                  {row === 0 ? 'F' : 'B'}{col + 1}
+                  {/* {row === 0 ? 'F' : 'B'}{col + 1} */}
                 </div>
               )}
             </div>
@@ -261,9 +261,9 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
                     key={card.id}
                     style={{
                       position: 'absolute',
-                      left: index * 4, // Smaller offset for hand/lands
-                      top: index * 4,
-                      zIndex: 10 + index,
+                      left: index * 8, // Smaller offset for hand/lands
+                      top: index * 8,
+                      zIndex: 30 + index,
                     }}
                   >
                     <Card card={card} />
@@ -272,6 +272,42 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Graveyard and Exile: card-sized zones that stack cards
+  if (zone === ZoneEnum.GRAVEYARD || zone === ZoneEnum.EXILE) {
+    return (
+      <div
+        ref={setNodeRef}
+        className={`zone ${className} relative ${isOver ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}`}
+        data-zone-id={id || zone}
+      >
+        <div className="absolute top-0 left-2 text-white text-xs font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-2 py-1 rounded border border-yellow-600 border-opacity-30 shadow-lg z-10">
+          {title} ({cards.length}) {isOver && '[OVER]'}
+        </div>
+        <div className="relative w-full h-full flex items-start justify-start p-2">
+          {children}
+          {cards.map((card, index) => (
+            <div
+              key={card.id}
+              className="absolute"
+              style={{
+                bottom: `${index * 8}px`,
+                right: `${index * 8}px`,
+                zIndex: 30 + index,
+              }}
+            >
+              <Card card={card} />
+            </div>
+          ))}
+          {cards.length === 0 && (
+            <div className="text-white text-xs opacity-30 select-none pointer-events-none">
+              {title === 'Graveyard' ? '🪦' : '⛓️'}
+            </div>
+          )}
         </div>
       </div>
     );

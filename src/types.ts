@@ -5,6 +5,9 @@ export const Zone = {
   OPPONENT_BATTLEFIELD: 'opponent-battlefield',
   LANDS: 'lands',
   GRAVEYARD: 'graveyard',
+  EXILE: 'exile',
+  OPPONENT_GRAVEYARD: 'opponent-graveyard',
+  OPPONENT_EXILE: 'opponent-exile',
 } as const;
 
 export type Zone = typeof Zone[keyof typeof Zone];

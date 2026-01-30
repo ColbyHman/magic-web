@@ -51,9 +51,16 @@ function App() {
     } else if (targetZone === 'opponent-battlefield') {
       // Prevent dropping in opponent's battlefield
       return;
-    } else if (targetZone === 'opponent-graveyard' || targetZone === 'exile') {
-      // Prevent dropping in graveyards and exile
+    } else if (targetZone === 'opponent-graveyard') {
+      // Prevent dropping in opponent's graveyard
       return;
+    } else if (targetZone === 'opponent-exile') {
+      // Prevent dropping in opponent's exile
+      return;
+    } else if (targetZone === 'player-graveyard') {
+      targetZone = Zone.GRAVEYARD;
+    } else if (targetZone === 'player-exile') {
+      targetZone = Zone.EXILE;
     }
 
     // Only allow valid zones

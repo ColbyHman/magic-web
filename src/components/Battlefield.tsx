@@ -8,6 +8,22 @@ export const Battlefield: React.FC<BattlefieldProps> = React.memo(({ setBattlefi
       {/* Top area - Opponent zones */}
       <div className="h-[35vh] min-h-[200px] flex gap-4 flex-shrink-0">
           {/* Left column: Graveyard and Exile */}
+          <div className="flex flex-col gap-2 w-20 flex-shrink-0">
+            <ZoneComponent 
+              zone={Zone.OPPONENT_GRAVEYARD} 
+              title="Graveyard" 
+              className="h-12"
+              id="opponent-graveyard"
+              isDroppable={false}
+            />
+            <ZoneComponent 
+              zone={Zone.OPPONENT_EXILE} 
+              title="Exile" 
+              className="h-12"
+              id="opponent-exile"
+              isDroppable={false}
+            />
+          </div>
           {/* Center: Opponent Battlefield */}
           <div className="flex-1 min-w-0 max-w-6xl mx-auto">
             <ZoneComponent 
@@ -23,24 +39,35 @@ export const Battlefield: React.FC<BattlefieldProps> = React.memo(({ setBattlefi
 
       {/* Main game area - Player battlefield, lands, and hand */}
       <div className="flex-1 flex flex-col min-h-0 w-full">
-        {/* Player Battlefield - slightly smaller */}
-        <div className="h-[35vh] min-h-[200px] mb-2 flex items-center justify-center w-full max-w-6xl mx-auto flex-shrink-0">
-          <ZoneComponent 
-            zone={Zone.BATTLEFIELD} 
-            title="Battlefield"
-            id="player-battlefield"
-            setBattlefieldHover={setBattlefieldHover}
-          />
+        {/* Player Battlefield area */}
+        <div className="h-[35vh] min-h-[200px] mb-2 flex-shrink-0 flex items-center w-full">
+          {/* Left side: Graveyard and Exile */}
+          <div className="flex flex-col gap-3 w-32 flex-shrink-0 mr-4">
+            <ZoneComponent 
+              zone={Zone.GRAVEYARD} 
+              title="Graveyard" 
+              className="h-40"
+              id="player-graveyard"
+            />
+            <ZoneComponent 
+              zone={Zone.EXILE} 
+              title="Exile" 
+              className="h-40"
+              id="player-exile"
+            />
+          </div>
+          {/* Center: Player Battlefield */}
+          <div className="flex-1 min-w-0 max-w-6xl mx-auto">
+            <ZoneComponent 
+              zone={Zone.BATTLEFIELD} 
+              title="Battlefield"
+              id="player-battlefield"
+              setBattlefieldHover={setBattlefieldHover}
+            />
+          </div>
         </div>
         {/* Player Lands - dedicated zone */}
         <div className="h-[12vh] min-h-[80px] mb-2 flex-shrink-0 flex items-center w-full">
-          <ZoneComponent 
-              zone={Zone.GRAVEYARD} 
-              title="Graveyard" 
-              className="h-24"
-              id="opponent-graveyard"
-              isDroppable={false}
-            />
           <ZoneComponent 
             zone={Zone.LANDS} 
             title="Lands"
@@ -59,16 +86,7 @@ export const Battlefield: React.FC<BattlefieldProps> = React.memo(({ setBattlefi
             setBattlefieldHover={setHandHover}
           />
         </div>
-        {/* Exile zone */}
-        <div className="h-[6vh] min-h-[40px] flex-shrink-0 flex items-center w-full">
-          <ZoneComponent 
-              zone={Zone.GRAVEYARD} 
-              title="Exile" 
-              className="h-12"
-              id="exile"
-              isDroppable={false}
-            />
-        </div>
+
       </div>
     </div>
   );

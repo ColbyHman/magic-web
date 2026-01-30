@@ -21,7 +21,7 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
     isDragging,
   } = useDraggable({
     id: card.id,
-    disabled: !isDraggable || card.zone === Zone.GRAVEYARD,
+    disabled: !isDraggable,
   });
 
   // Handle double-click for tapping
