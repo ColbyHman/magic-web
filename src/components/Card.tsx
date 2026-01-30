@@ -21,7 +21,7 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
     isDragging,
   } = useDraggable({
     id: card.id,
-    disabled: !isDraggable || card.zone === Zone.GRAVEYARD,
+    disabled: !isDraggable,
   });
 
   // Handle double-click for tapping
@@ -34,8 +34,7 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
     }
   };
 
-  // Use a generic MTG card frame image for all cards
-  const cardImageUrl = "https://cards.scryfall.io/large/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.jpg?1706239968";
+  const cardImageUrl = card.imageUrl || 'https://cards.scryfall.io/large/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.jpg?1706239968';
   
   const [imageError, setImageError] = React.useState(false);
 
@@ -76,12 +75,11 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
         <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-red-800 rounded-lg" />
       )}
       
-      {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0 bg-black bg-opacity-40" />
+      <div className="absolute inset-0" />
       listeners
-      {/* Card content */}
+      {/* Card content - text commented for now */}
       <div className="relative h-full p-2 flex flex-col justify-between">
-        <div className="text-center">
+        {/* <div className="text-center">
           <div className="text-[clamp(10px,1.5vw,12px)] font-bold text-white drop-shadow-lg rounded px-1 mb-1 truncate">
             {card.name}
           </div>
@@ -90,17 +88,13 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
               {card.manaCost}
             </div>
           )}
-        </div>
+        </div> */}
         
         <div className="text-[clamp(8px,1.2vw,10px)] font-bold text-white text-center drop-shadow-lg rounded px-1 bg-black bg-opacity-60">
-          {card.type.split(' — ')[0]}
+          {/* {card.type.split(' — ')[0]} */}
         </div>
       </div>
 
-      {/* Tapped overlay */}
-      {card.tapped && (
-        <div className="absolute inset-0 bg-blue-500 bg-opacity-40 rounded-lg pointer-events-none" />
-      )}
     </motion.div>
   );
 });
