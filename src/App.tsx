@@ -3,6 +3,7 @@ import { DndContext, type DragEndEvent, type DragStartEvent, DragOverlay, Pointe
 import { useGameStore, useCardById } from './store/gameStore';
 import { Battlefield } from './components/Battlefield';
 import { Card } from './components/Card';
+import { PhaseIndicator } from './components/PhaseIndicator';
 import { Zone } from './types';
 
 function App() {
@@ -88,6 +89,8 @@ function App() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
+      <PhaseIndicator />
+      
       <div className="w-full h-screen overflow-hidden">
         <Battlefield setBattlefieldHover={setBattlefieldHover} setHandHover={setHandHover} setLandsHover={setLandsHover} />
       </div>
