@@ -1,0 +1,84 @@
+/* Card Component CSS Module */
+
+.card {
+  border-radius: 0.5rem;
+  border: 2px solid rgb(31 41 55);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  cursor: move;
+  transition: transform 0.2s;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card.dragging {
+  opacity: 0.5;
+}
+
+.card.isDragging {
+  z-index: 1000;
+}
+
+/* Card content styles */
+.cardContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 0.5rem;
+}
+
+.cardTitle {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.cardTypes {
+  color: rgb(209 213 219);
+  font-size: 0.75rem;
+}
+
+.cardStats {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* Card back for face-down cards */
+.cardBack {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom right, rgb(30 58 138), rgb(91 33 182));
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardBack::after {
+  content: "🎴";
+  font-size: 1.5rem;
+}

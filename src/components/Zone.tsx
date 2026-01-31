@@ -4,6 +4,7 @@ import { Zone as ZoneEnum } from '../types';
 import type { Zone as ZoneType } from '../types';
 import { useCardsInZone } from '../store/gameStore';
 import { Card } from './Card';
+import styles from './Zone.module.css';
 
 interface ZoneProps {
   zone: ZoneType;
@@ -104,15 +105,15 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
     return (
       <div
         ref={setNodeRef}
-        className={`zone ${className} min-h-32 relative ring-2 ring-yellow-400 ring-opacity-60 flex items-center justify-center w-full h-full`}
+        className={`${styles.zone} ${styles.zoneContainer} ${className}`}
         data-zone-id={id || zone}
       >
-        <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
+        <div className={styles.zoneTitle}>
            {title} {/* ({cards.length}) {isOver && '[OVER]'} */}
         </div>
         <div
           ref={gridRef}
-          className="relative grid gap-1 bg-green-900 bg-opacity-30 w-full h-full"
+          className={styles.battlefieldGrid}
           style={{
             gridTemplateColumns: `repeat(${cols}, minmax(60px, 1fr))`,
             gridTemplateRows: `repeat(${rows}, 1fr)`,
@@ -125,9 +126,13 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
             <div
               key={`cell-${row}-${col}`}
               ref={el => { cellRefs.current[i] = el; }}
-              className={`relative rounded flex items-center justify-center transition-all duration-75 bg-green-950/30`
-                + (hoveredCell && hoveredCell.row === row && hoveredCell.col === col ? ' border-yellow-400 bg-yellow-100 bg-opacity-20' : stack.length ? ' border-transparent' : ' border-white border-opacity-20')}
-              style={{ aspectRatio: '5/7', width: '100%', height: '100%' }}
+              className={`${styles.battlefieldCell} ${
+                hoveredCell && hoveredCell.row === row && hoveredCell.col === col 
+                  ? 'border-yellow-400 bg-yellow-100 bg-opacity-20' 
+                  : stack.length 
+                    ? 'border-transparent' 
+                    : 'border-white border-opacity-20'
+              }`}
               onMouseEnter={() => {
                 setHoveredCellState({ row, col });
                 // console.log(`Hovering over cell [${row},${col}] - Stack:`, stack.length, 'cards:', stack.map(c => c.name));
@@ -141,12 +146,12 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
                 </div>
               )}
               {/* Stack cards with offset */}
-              <div className="relative w-full h-full flex items-center justify-center" style={{ aspectRatio: '5/7', width: '90%', height: '90%' }}>
+              <div className={styles.cardContainer}>
                 {stack.map((card, i) => (
                   <div
                     key={card.id}
+                    className={styles.cardStackOffset}
                     style={{
-                      position: 'absolute',
                       left: i * 8,
                       top: i * 8,
                       zIndex: 30 + i,
@@ -267,14 +272,14 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
     return (
       <div
         ref={setNodeRef}
-        className={`zone ${className} relative ${isOver ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}`}
+        className={`${styles.zone} ${className} ${isOver ? styles.dragOver : ''}`}
         data-zone-id={id || zone}
       >
-        <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
+<div className={styles.zoneTitle}>
           {title} ({topLevelCards.length}) {isOver && '[OVER]'}
         </div>
         <div 
-          className="relative grid gap-1 w-full h-full p-2"
+          className={styles.handLandsGrid}
           style={{
             gridTemplateColumns: `repeat(${cols}, minmax(60px, 1fr))`,
             gridTemplateRows: `repeat(${rows}, 1fr)`,
@@ -284,18 +289,25 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
             <div
               key={`cell-${row}-${col}`}
               ref={el => { cellRefs.current[i] = el; }}
-              className={`relative border border-dashed rounded flex items-center justify-center ${zone === ZoneEnum.HAND ? 'bg-blue-900/20' : 'bg-green-900/20'} ${hoveredCell && hoveredCell.row === row && hoveredCell.col === col ? 'border-yellow-400 bg-yellow-100 bg-opacity-20' : stack.length ? 'border-transparent' : 'border-white/20'}`}
-              style={{ aspectRatio: '5/7' }}
+              className={`${styles.handLandsCell} ${
+                zone === ZoneEnum.HAND ? 'bg-blue-900/20' : 'bg-green-900/20'
+              } ${
+                hoveredCell && hoveredCell.row === row && hoveredCell.col === col 
+                  ? 'border-yellow-400 bg-yellow-100 bg-opacity-20' 
+                  : stack.length 
+                    ? 'border-transparent' 
+                    : 'border-white/20'
+              }`}
               onMouseEnter={() => setHoveredCellState({ row, col })}
               onMouseLeave={() => setHoveredCellState(null)}
             >
               {/* Stack cards with offset */}
-              <div className="relative w-full h-full flex items-center justify-center" style={{ aspectRatio: '5/7', width: '90%', height: '90%' }}>
+              <div className={styles.cardContainer}>
                 {stack.map((card, index) => (
                   <div
                     key={card.id}
+                    className={styles.cardStackOffset}
                     style={{
-                      position: 'absolute',
                       left: index * 8, // Smaller offset for hand/lands
                       top: index * 8,
                       zIndex: 30 + index,
@@ -317,18 +329,18 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
     return (
       <div
         ref={setNodeRef}
-        className={`zone ${className} relative ${isOver ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}`}
+        className={`${styles.zone} ${className} ${isOver ? styles.dragOver : ''}`}
         data-zone-id={id || zone}
       >
-        <div className="absolute top-0 left-2 text-white text-xs font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-2 py-1 rounded border border-yellow-600 border-opacity-30 shadow-lg z-10">
+        <div className={styles.graveyardExileTitle}>
           {title} ({cards.length}) {isOver && '[OVER]'}
         </div>
-        <div className="relative w-full h-full flex items-start justify-start p-2">
+        <div className={styles.graveyardExileContainer}>
           {children}
           {cards.map((card, index) => (
             <div
               key={card.id}
-              className="absolute"
+              className={styles.cardStackOffset}
               style={{
                 bottom: `${index * 8}px`,
                 right: `${index * 8}px`,
@@ -339,7 +351,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
             </div>
           ))}
           {cards.length === 0 && (
-            <div className="text-white text-xs opacity-30 select-none pointer-events-none">
+            <div className={styles.graveyardExileEmpty}>
               {title === 'Graveyard' ? '🪦' : '⛓️'}
             </div>
           )}
@@ -352,13 +364,13 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
   return (
     <div 
       ref={setNodeRef}
-      className={`zone ${className} relative ${isOver ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}`}
+      className={`${styles.zone} ${className} ${isOver ? styles.dragOver : ''}`}
       data-zone-id={id || zone}
     >
-      <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
+      <div className={styles.zoneTitle}>
         {title} ({cards.length}) {isOver && '[OVER]'}
       </div>
-      <div className={`w-full h-full flex flex-wrap gap-2 ${isOver ? 'drag-over' : ''} p-2 overflow-auto`}>
+      <div className={`${styles.defaultZone} ${isOver ? styles.dragOver : ''}`}>
         {children}
         {cards.map((card) => {
           console.log('Rendering Card component:', card.name, 'in zone:', zone);

@@ -6,6 +6,7 @@ import { Zone } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { CardContextMenu } from './CardContextMenu';
 import { CardDetailsModal } from './CardDetailsModal';
+import styles from './Card.module.css';
 
 interface CardProps {
   card: CardType;
@@ -138,11 +139,12 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true,
   
   const [imageError, setImageError] = React.useState(false);
 
-  const style = transform ? {
+  const cardStyle = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
+    ...(imageError ? {} : { backgroundImage: `url(${cardImageUrl})` })
+  } : imageError ? {} : { backgroundImage: `url(${cardImageUrl})` };
 
-  return (
+return (
     <>
       <motion.div
         ref={setNodeRef}
@@ -160,11 +162,11 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true,
         }}
         id={`card-${card.id}`}
         style={{
-          ...style,
+          ...cardStyle,
           zIndex: zIndexOverride !== undefined ? zIndexOverride : undefined,
         }}
-      className={`card relative w-[6vw] h-[8.4vw] max-w-[120px] max-h-[168px] min-w-[80px] min-h-[112px] rounded-lg cursor-pointer shadow-lg overflow-hidden flex-shrink-0 ${
-        isDragging ? 'dragging' : ''
+        className={`${styles.card} w-[6vw] h-[8.4vw] max-w-[120px] max-h-[168px] min-w-[80px] min-h-[112px] rounded-lg cursor-pointer shadow-lg overflow-hidden flex-shrink-0 ${
+        isDragging ? styles.dragging : ''
       } ${card.tapped ? 'origin-center' : ''} ${
         attachmentMode.active && isHovered && card.id !== attachmentMode.sourceCardId && card.zone === Zone.BATTLEFIELD
           ? 'ring-4 ring-yellow-400 ring-opacity-80'
@@ -182,20 +184,22 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true,
       onDoubleClick={handleCardDoubleClick}
       whileHover={{ scale: 1.05 }}
     >
-      {/* Card background image */}
-      {!imageError ? (
-        <img 
-          src={cardImageUrl}
-          alt={card.name}
-          className="absolute inset-0 w-full h-full object-cover rounded-lg"
-          onError={() => setImageError(true)}
-        />
-      ) : (
+      {/* Card background - handled by style prop */}
+      {imageError && (
         <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-red-800 rounded-lg" />
       )}
       
+      {/* Fallback image handling */}
+      {!imageError && (
+        <img 
+          src={cardImageUrl}
+          alt={card.name}
+          className="absolute inset-0 w-full h-full object-cover rounded-lg opacity-0"
+          onError={() => setImageError(true)}
+        />
+      )}
+      
       <div className="absolute inset-0" />
-      listeners
       {/* Card content - text commented for now */}
       <div className="relative h-full p-2 flex flex-col justify-between">
         {/* <div className="text-center">
