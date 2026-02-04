@@ -56,6 +56,10 @@ export interface GameState {
   cards: Card[];
   currentPhase: Phase;
   currentStep: Step;
+  attachmentMode: {
+    active: boolean;
+    sourceCardId: string | null;
+  };
 }
 
 export interface Card {
@@ -67,6 +71,8 @@ export interface Card {
   tapped: boolean;
   position?: { row: number; col: number };
   imageUrl?: string;
+  attachedTo?: string; // ID of the card this card is attached to
+  attachedCards?: string[]; // IDs of cards attached to this card
 }
 
 export interface BattlefieldProps {
@@ -76,6 +82,10 @@ export interface BattlefieldProps {
 
 export interface GameActions {
   tapCard: (cardId: string) => void;
+  attachCard: (childId: string, parentId: string) => void;
+  detachCard: (childId: string) => void;
+  startAttachmentMode: (cardId: string) => void;
+  cancelAttachmentMode: () => void;
   moveCard: (cardId: string, toZone: Zone, position?: { row: number; col: number }) => void;
   advanceStep: () => void;
   skipToEnd: () => void;

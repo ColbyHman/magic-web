@@ -2,169 +2,68 @@ import { create } from 'zustand';
 import React from 'react';
 import type { Card, GameState, GameActions, Zone as ZoneType, Phase, Step } from '../types';
 import { Zone, Phase as PhaseEnum, Step as StepEnum } from '../types';
+import { initializeCards } from '../utils/initializeCards';
 
-// Real MTG card data with images from Scryfall
-const mockCards: Card[] = [
-  // Hand cards (7 cards)
-  { 
-    id: 'venom', 
-    name: 'Venom, Evil Unleashed', 
-    manaCost: '{4}{B}', 
-    type: 'Legendary Creature — Symbiote Villain', 
-    zone: Zone.HAND, 
-    tapped: false, 
-    position: { row: 0, col: 2 },
-    imageUrl: 'https://cards.scryfall.io/large/front/a/b/ab3d51a4-40f0-4606-b5f9-2686c12fd54b.jpg?1757377205'
-  },
-  { 
-    id: 'ezio', 
-    name: 'Ezio, Brash Novice', 
-    manaCost: '{1}{R/W}', 
-    type: 'Legendary Creature — Human', 
-    zone: Zone.HAND, 
-    tapped: false, 
-    position: { row: 0, col: 3},
-    imageUrl: 'https://cards.scryfall.io/large/front/3/3/3351cae2-87be-4438-ba58-f4f4aff2416c.jpg?1721423999'
-  },
-  { 
-    id: 'lightning', 
-    name: 'Lightning Bolt', 
-    manaCost: '{R}', 
-    type: 'Instant', 
-    zone: Zone.HAND, 
-    tapped: false, 
-    position: { row: 0, col: 4 },
-    imageUrl: 'https://cards.scryfall.io/large/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.jpg?1706239968'
-  },
-  { 
-    id: 'counterspell', 
-    name: 'Counterspell', 
-    manaCost: '{U}{U}', 
-    type: 'Instant', 
-    zone: Zone.HAND, 
-    tapped: false, 
-    position: { row: 0, col: 6 },
-    imageUrl: 'https://cards.scryfall.io/large/front/4/f/4f616706-ec97-4923-bb1e-11a69fbaa1f8.jpg?1751282477'
-  },
-  { 
-    id: 'fireball', 
-    name: 'Fireball', 
-    manaCost: 'XR', 
-    type: 'Sorcery', 
-    zone: Zone.HAND, 
-    tapped: false, 
-    position: { row: 0, col: 7 },
-    imageUrl: 'https://cards.scryfall.io/large/front/d/f/df45a43e-a5b7-4fd4-873b-7b3c021be198.jpg?1674136553'
-  },
-  { 
-    id: 'goblin', 
-    name: 'Goblin Guide', 
-    manaCost: 'R', 
-    type: 'Creature — Goblin Scout', 
-    zone: Zone.HAND, 
-    tapped: false, 
-    position: { row: 0, col: 8 },
-    imageUrl: 'https://cards.scryfall.io/large/front/3/c/3c0f5411-1940-410f-96ce-6f92513f753a.jpg?1599706366'
-  },
-  { 
-    id: 'forest-hand', 
-    name: 'Forest', 
-    manaCost: '', 
-    type: 'Basic Land — Forest', 
-    zone: Zone.HAND, 
-    tapped: false, 
-    position: { row: 0, col: 9 },
-    imageUrl: 'https://cards.scryfall.io/large/front/b/4/b460f5f7-c7c9-400c-8419-23d614f45bf9.jpg?1767773926'
-  },
-  
-  // Battlefield cards (3 cards - artifact, creature, sorcery)
-  { 
-    id: 'sol-ring', 
-    name: 'Sol Ring', 
-    manaCost: '{1}', 
-    type: 'Artifact', 
-    zone: Zone.BATTLEFIELD, 
-    tapped: false, 
-    position: { row: 0, col: 2 },
-    imageUrl: 'https://cards.scryfall.io/large/front/2/8/2824f3fb-82e6-43bd-babf-da6777a5b075.jpg?1729273449'
-  },
-  { 
-    id: 'tarmogoyf', 
-    name: 'Tarmogoyf', 
-    manaCost: '{1}{G}', 
-    type: 'Creature — Lhurgoyf', 
-    zone: Zone.BATTLEFIELD, 
-    tapped: false, 
-    position: { row: 0, col: 5 },
-    imageUrl: 'https://cards.scryfall.io/large/front/6/9/69daba76-96e8-4bcc-ab79-2f00189ad8fb.jpg?1619398799'
-  },
-  { 
-    id: 'ancestral', 
-    name: 'Ancestral Recall', 
-    manaCost: 'U', 
-    type: 'Instant', 
-    zone: Zone.BATTLEFIELD, 
-    tapped: false, 
-    position: { row: 1, col: 7 },
-    imageUrl: 'https://cards.scryfall.io/large/front/2/3/2398892d-28e9-4009-81ec-0d544af79d2b.jpg?1614638829'
-  },
-  
-  // Lands zone cards (4 cards)
-  { 
-    id: 'mountain-1', 
-    name: 'Mountain', 
-    manaCost: '', 
-    type: 'Basic Land — Mountain', 
-    zone: Zone.LANDS, 
-    tapped: false, 
-    position: { row: 0, col: 3 },
-    imageUrl: 'https://cards.scryfall.io/large/front/2/9/295b92bc-d66f-45d8-9bbe-5f5f13e39fd4.jpg?1767773878'
-  },
-  { 
-    id: 'island-1', 
-    name: 'Island', 
-    manaCost: '', 
-    type: 'Basic Land — Island', 
-    zone: Zone.LANDS, 
-    tapped: false, 
-    position: { row: 0, col: 4 },
-    imageUrl: 'https://cards.scryfall.io/large/front/5/7/57d9b053-ed45-41f3-a0ab-0a08c41f587a.jpg?1760102991'
-  },
-  { 
-    id: 'forest-1', 
-    name: 'Forest', 
-    manaCost: '', 
-    type: 'Basic Land — Forest', 
-    zone: Zone.LANDS, 
-    tapped: false, 
-    position: { row: 0, col: 5 },
-    imageUrl: 'https://cards.scryfall.io/large/front/4/b/4b535df5-f79c-4ab5-9b2f-cbbb5adad70a.jpg?1758801202'
-  },
-  { 
-    id: 'mountain-2', 
-    name: 'Mountain', 
-    manaCost: '', 
-    type: 'Basic Land — Mountain', 
-    zone: Zone.LANDS, 
-    tapped: false, 
-    position: { row: 0, col: 6 },
-    imageUrl: 'https://cards.scryfall.io/large/front/2/9/295b92bc-d66f-45d8-9bbe-5f5f13e39fd4.jpg?1767773878'
-  },
-];
+// Initial empty cards array - will be populated from Scryfall
+const initialCards: Card[] = [];
 
-type GameStore = GameState & GameActions;
+type GameStore = GameState & GameActions & {
+  loadCards: () => Promise<void>;
+  isLoading: boolean;
+};
 
 export const useGameStore = create<GameStore>((set) => ({
-  cards: mockCards,
+  cards: initialCards,
   currentPhase: PhaseEnum.BEGINNING,
   currentStep: StepEnum.UNTAP,
+  attachmentMode: {
+    active: false,
+    sourceCardId: null,
+  },
+  isLoading: true,
 
-
+  // Load cards from Scryfall with caching
+  loadCards: async () => {
+    try {
+      const cards = await initializeCards();
+      set({ cards, isLoading: false });
+    } catch (error) {
+      console.error('Failed to load cards:', error);
+      set({ isLoading: false });
+    }
+  },
 
   // moveCard now supports optional position for battlefield, hand, and lands placement
   moveCard: (cardId: string, toZone: ZoneType, position?: { row: number; col: number }) => {
     console.log('Store moveCard:', cardId, 'to zone:', toZone, 'position:', position);
     set((state) => {
+      // Detach all attachments if moving away from battlefield
+      let updatedCards = state.cards;
+      if (toZone !== Zone.BATTLEFIELD) {
+        const card = state.cards.find(c => c.id === cardId);
+        if (card?.attachedCards && card.attachedCards.length > 0) {
+          // Detach all children
+          updatedCards = updatedCards.map(c => {
+            if (card.attachedCards?.includes(c.id)) {
+              return { ...c, attachedTo: undefined };
+            }
+            return c;
+          });
+        }
+        if (card?.attachedTo) {
+          // Remove from parent's attachedCards array
+          updatedCards = updatedCards.map(c => {
+            if (c.id === card.attachedTo) {
+              return {
+                ...c,
+                attachedCards: c.attachedCards?.filter(id => id !== cardId),
+              };
+            }
+            return c;
+          });
+        }
+      }
+
       if (toZone === Zone.BATTLEFIELD || toZone === Zone.HAND || toZone === Zone.LANDS) {
         // Use provided position if given, otherwise find next available
         let pos = position;
@@ -173,7 +72,7 @@ export const useGameStore = create<GameStore>((set) => ({
         if (toZone === Zone.HAND) {
           pos = undefined;
         } else if (!pos) {
-          const zoneCards = state.cards.filter(c => c.zone === toZone && c.position);
+          const zoneCards = updatedCards.filter(c => c.zone === toZone && c.position);
           const occupied = zoneCards.map(c => c.position).filter(Boolean) as { row: number; col: number }[];
           let found = false;
           pos = { row: 0, col: 0 };
@@ -188,7 +87,7 @@ export const useGameStore = create<GameStore>((set) => ({
             }
           }
         }
-        const newCards = state.cards.map((card) =>
+        const newCards = updatedCards.map((card) =>
           card.id === cardId
             ? { ...card, zone: toZone, tapped: false, position: pos }
             : card
@@ -197,7 +96,7 @@ export const useGameStore = create<GameStore>((set) => ({
         return { cards: newCards };
       } else {
         // Remove position if not on battlefield, hand, or lands
-        const newCards = state.cards.map((card) =>
+        const newCards = updatedCards.map((card) =>
           card.id === cardId
             ? { ...card, zone: toZone, tapped: false, position: undefined }
             : card
@@ -281,6 +180,107 @@ export const useGameStore = create<GameStore>((set) => ({
     set(() => ({
       currentPhase: PhaseEnum.BEGINNING,
       currentStep: StepEnum.UNTAP,
+    }));
+  },
+
+  attachCard: (childId: string, parentId: string) => {
+    set((state) => {
+      const child = state.cards.find(c => c.id === childId);
+      const parent = state.cards.find(c => c.id === parentId);
+
+      // Only allow attachment on battlefield
+      if (!child || !parent || child.zone !== Zone.BATTLEFIELD || parent.zone !== Zone.BATTLEFIELD) {
+        return state;
+      }
+
+      // Prevent attaching to self or creating circular references
+      if (childId === parentId || parent.attachedTo === childId) {
+        return state;
+      }
+
+      // Update cards
+      const newCards = state.cards.map(card => {
+        if (card.id === childId) {
+          // If child was already attached to another card, remove it from that parent first
+          if (child.attachedTo) {
+            const oldParent = state.cards.find(c => c.id === child.attachedTo);
+            if (oldParent) {
+              const oldParentIndex = state.cards.indexOf(oldParent);
+              state.cards[oldParentIndex] = {
+                ...oldParent,
+                attachedCards: oldParent.attachedCards?.filter(id => id !== childId) || [],
+              };
+            }
+          }
+          // Attach child to new parent, inherit parent's position
+          return {
+            ...card,
+            attachedTo: parentId,
+            position: parent.position,
+          };
+        }
+        if (card.id === parentId) {
+          // Add child to parent's attachedCards array
+          return {
+            ...card,
+            attachedCards: [...(card.attachedCards || []), childId],
+          };
+        }
+        return card;
+      });
+
+      return {
+        cards: newCards,
+        attachmentMode: { active: false, sourceCardId: null },
+      };
+    });
+  },
+
+  detachCard: (childId: string) => {
+    set((state) => {
+      const child = state.cards.find(c => c.id === childId);
+      if (!child || !child.attachedTo) {
+        return state;
+      }
+
+      const parentId = child.attachedTo;
+      const newCards = state.cards.map(card => {
+        if (card.id === childId) {
+          // Remove attachedTo, keep same position
+          return {
+            ...card,
+            attachedTo: undefined,
+          };
+        }
+        if (card.id === parentId) {
+          // Remove child from parent's attachedCards array
+          return {
+            ...card,
+            attachedCards: card.attachedCards?.filter(id => id !== childId) || [],
+          };
+        }
+        return card;
+      });
+
+      return { cards: newCards };
+    });
+  },
+
+  startAttachmentMode: (cardId: string) => {
+    set(() => ({
+      attachmentMode: {
+        active: true,
+        sourceCardId: cardId,
+      },
+    }));
+  },
+
+  cancelAttachmentMode: () => {
+    set(() => ({
+      attachmentMode: {
+        active: false,
+        sourceCardId: null,
+      },
     }));
   },
 
