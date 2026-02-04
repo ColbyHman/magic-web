@@ -30,12 +30,6 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
   const gridRef = React.useRef<HTMLDivElement>(null);
   const { isOver, setNodeRef } = useDroppable({ id: id || zone, disabled: !isDroppable });
 
-  // Filter out attached cards - they'll be rendered with their parents
-  const topLevelCards = React.useMemo(() => 
-    cards.filter(card => !card.attachedTo),
-    [cards]
-  );
-
   // Battlefields: render grid with hover, stack offsets, and preview
   if (zone === ZoneEnum.BATTLEFIELD || zone === ZoneEnum.OPPONENT_BATTLEFIELD) {
     // Responsive grid: columns/rows by screen size (CSS only)
