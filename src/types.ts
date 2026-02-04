@@ -71,7 +71,6 @@ export interface Card {
 
 export interface BattlefieldProps {
   setBattlefieldHover?: (cell: { row: number; col: number } | null) => void;
-  setHandHover?: (cell: { row: number; col: number } | null) => void;
   setLandsHover?: (cell: { row: number; col: number } | null) => void;
 }
 

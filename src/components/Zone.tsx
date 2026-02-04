@@ -23,6 +23,12 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
   const gridRef = React.useRef<HTMLDivElement>(null);
   const { isOver, setNodeRef } = useDroppable({ id: id || zone, disabled: !isDroppable });
 
+  // Filter out attached cards - they'll be rendered with their parents
+  const topLevelCards = React.useMemo(() => 
+    cards.filter(card => !card.attachedTo),
+    [cards]
+  );
+
   // Battlefields: render grid with hover, stack offsets, and preview
   if (zone === ZoneEnum.BATTLEFIELD || zone === ZoneEnum.OPPONENT_BATTLEFIELD) {
     // Responsive grid: columns/rows by screen size (CSS only)
@@ -162,14 +168,75 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
     );
   }
 
-  // Hand and Lands: render cards in a grid layout with position support
-  if (zone === ZoneEnum.HAND || zone === ZoneEnum.LANDS) {
-    // Create a grid for hand/lands - 1 row, many columns
+  // Hand: render cards in a centered, overlapping row
+  if (zone === ZoneEnum.HAND) {
+    const [hoveredCardId, setHoveredCardId] = React.useState<string | null>(null);
+    const cardWidth = 100; // Base card width in pixels
+    const maxSpacing = 50; // Maximum spacing between cards
+    const minSpacing = 15; // Minimum spacing (for heavy overlap)
+    const containerPadding = 40;
+    
+    // Calculate optimal spacing based on number of cards
+    // Target: keep hand within middle 50% of screen width
+    const availableWidth = typeof window !== 'undefined' ? (window.innerWidth * 0.5) : 600;
+    const optimalSpacing = topLevelCards.length > 1 
+      ? Math.max(minSpacing, Math.min(maxSpacing, (availableWidth - cardWidth) / (topLevelCards.length - 1)))
+      : maxSpacing;
+
+    return (
+      <div
+        ref={setNodeRef}
+        className={`zone ${className} relative ${isOver ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}`}
+        data-zone-id={id || zone}
+      >
+        <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
+          {title} ({topLevelCards.length}) {isOver && '[OVER]'}
+        </div>
+        
+        {/* Centered card container */}
+        <div className="w-full h-full flex items-center justify-center">
+          <div 
+            className="relative flex items-center justify-center"
+            style={{
+              height: '100%',
+            }}
+          >
+            {topLevelCards.map((card, index) => {
+              const totalWidth = optimalSpacing * (topLevelCards.length - 1) + cardWidth;
+              const startOffset = -totalWidth / 2 + (cardWidth / 2);
+              const xPosition = startOffset + (index * optimalSpacing);
+              const isHovered = hoveredCardId === card.id;
+              
+              return (
+                <div
+                  key={card.id}
+                  style={{
+                    position: 'absolute',
+                    left: `calc(50% + ${xPosition}px)`,
+                    transform: 'translateX(-50%)',
+                    zIndex: isHovered ? 1000 : 30 + index,
+                  }}
+                  onMouseEnter={() => setHoveredCardId(card.id)}
+                  onMouseLeave={() => setHoveredCardId(null)}
+                >
+                  <Card card={card} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Lands: render cards in a grid layout with position support
+  if (zone === ZoneEnum.LANDS) {
+    // Create a grid for lands - 1 row, many columns
     const rows = 1;
-    const cols = zone === ZoneEnum.HAND ? 12 : 10; // Hand can hold more cards
+    const cols = 10;
     const grid = Array.from({ length: rows }, (_, row) =>
       Array.from({ length: cols }, (_, col) => {
-        const stack = cards.filter(card => card.position?.row === row && card.position?.col === col);
+        const stack = topLevelCards.filter(card => card.position?.row === row && card.position?.col === col);
         return { row, col, stack };
       })
     );
@@ -236,7 +303,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
         data-zone-id={id || zone}
       >
         <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
-          {title} ({cards.length}) {isOver && '[OVER]'}
+          {title} ({topLevelCards.length}) {isOver && '[OVER]'}
         </div>
         <div 
           className="relative grid gap-1 w-full h-full p-2"
@@ -249,7 +316,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
             <div
               key={`cell-${row}-${col}`}
               ref={el => { cellRefs.current[i] = el; }}
-              className={`relative border border-dashed rounded flex items-center justify-center ${zone === ZoneEnum.HAND ? 'bg-blue-900/20' : 'bg-green-900/20'} ${hoveredCell && hoveredCell.row === row && hoveredCell.col === col ? 'border-yellow-400 bg-yellow-100 bg-opacity-20' : stack.length ? 'border-transparent' : 'border-white/20'}`}
+              className={`relative border border-dashed rounded flex items-center justify-center bg-green-900/20 ${hoveredCell && hoveredCell.row === row && hoveredCell.col === col ? 'border-yellow-400 bg-yellow-100 bg-opacity-20' : stack.length ? 'border-transparent' : 'border-white/20'}`}
               style={{ aspectRatio: '5/7' }}
               onMouseEnter={() => setHoveredCellState({ row, col })}
               onMouseLeave={() => setHoveredCellState(null)}

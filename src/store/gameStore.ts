@@ -168,13 +168,17 @@ export const useGameStore = create<GameStore>((set) => ({
       if (toZone === Zone.BATTLEFIELD || toZone === Zone.HAND || toZone === Zone.LANDS) {
         // Use provided position if given, otherwise find next available
         let pos = position;
-        if (!pos) {
+        
+        // Hand doesn't use positions - cards are auto-arranged
+        if (toZone === Zone.HAND) {
+          pos = undefined;
+        } else if (!pos) {
           const zoneCards = state.cards.filter(c => c.zone === toZone && c.position);
           const occupied = zoneCards.map(c => c.position).filter(Boolean) as { row: number; col: number }[];
           let found = false;
           pos = { row: 0, col: 0 };
           const rows = toZone === Zone.BATTLEFIELD ? 2 : 1;
-          const cols = toZone === Zone.HAND ? 12 : 10;
+          const cols = 10;
           for (let row = 0; row < rows && !found; row++) {
             for (let col = 0; col < cols && !found; col++) {
               if (!occupied.some(p => p.row === row && p.col === col)) {

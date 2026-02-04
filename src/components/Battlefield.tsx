@@ -2,7 +2,7 @@ import React from 'react';
 import { Zone, type BattlefieldProps } from '../types';
 import { ZoneComponent } from './Zone';
 
-export const Battlefield: React.FC<BattlefieldProps> = React.memo(({ setBattlefieldHover, setHandHover, setLandsHover }) => {
+export const Battlefield: React.FC<BattlefieldProps> = React.memo(({ setBattlefieldHover, setLandsHover }) => {
   return (
     <div className="flex flex-col h-full w-full max-w-screen-2xl mx-auto px-6 box-border">
       {/* Top area - Opponent zones */}
@@ -83,7 +83,6 @@ export const Battlefield: React.FC<BattlefieldProps> = React.memo(({ setBattlefi
             title="Hand"
             className="w-full h-full"
             id="player-hand"
-            setBattlefieldHover={setHandHover}
           />
         </div>
 

@@ -27,9 +27,8 @@ function App() {
 
   // Track hovered cells globally for drag-and-drop
   const [battlefieldHover, setBattlefieldHover] = React.useState<{ row: number; col: number } | null>(null);
-  const [handHover, setHandHover] = React.useState<{ row: number; col: number } | null>(null);
   const [landsHover, setLandsHover] = React.useState<{ row: number; col: number } | null>(null);
-  console.log('Hover cells - Battlefield:', battlefieldHover, 'Hand:', handHover, 'Lands:', landsHover);
+  console.log('Hover cells - Battlefield:', battlefieldHover, 'Lands:', landsHover);
   
   // Pass setBattlefieldHover to ZoneComponent for battlefield
 
@@ -68,8 +67,6 @@ function App() {
     if (Object.values(Zone).includes(targetZone as Zone)) {
       if (targetZone === Zone.BATTLEFIELD && battlefieldHover) {
         moveCard(cardId, targetZone as Zone, battlefieldHover);
-      } else if (targetZone === Zone.HAND && handHover) {
-        moveCard(cardId, targetZone as Zone, handHover);
       } else if (targetZone === Zone.LANDS && landsHover) {
         moveCard(cardId, targetZone as Zone, landsHover);
       } else {
@@ -77,7 +74,6 @@ function App() {
       }
     }
     setBattlefieldHover(null);
-    setHandHover(null);
     setLandsHover(null);
   };
 
@@ -92,7 +88,7 @@ function App() {
       <PhaseIndicator />
       
       <div className="w-full h-screen overflow-hidden">
-        <Battlefield setBattlefieldHover={setBattlefieldHover} setHandHover={setHandHover} setLandsHover={setLandsHover} />
+        <Battlefield setBattlefieldHover={setBattlefieldHover} setLandsHover={setLandsHover} />
       </div>
 
       <DragOverlay>
