@@ -19,7 +19,14 @@ interface ZoneProps {
 
 export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, className = '', children, id, setBattlefieldHover, isDroppable = true }) => {
   const cards = useCardsInZone(zone);
+  // Filter out attached cards - they'll be rendered with their parents
+  const topLevelCards = React.useMemo(() => 
+    cards.filter(card => !card.attachedTo),
+    [cards]
+  );
+  
   const [hoveredCell, setHoveredCellState] = React.useState<{ row: number; col: number } | null>(null);
+  const [hoveredAttachedCard, setHoveredAttachedCard] = React.useState<string | null>(null);
   const gridRef = React.useRef<HTMLDivElement>(null);
   const { isOver, setNodeRef } = useDroppable({ id: id || zone, disabled: !isDroppable });
 
@@ -30,7 +37,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
     const cols = 10;
     const grid = Array.from({ length: rows }, (_, row) =>
       Array.from({ length: cols }, (_, col) => {
-        const stack = cards.filter(card => card.position?.row === row && card.position?.col === col);
+        const stack = topLevelCards.filter(card => card.position?.row === row && card.position?.col === col);
         return { row, col, stack };
       })
     );
@@ -145,7 +152,35 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
                       zIndex: 30 + i,
                     }}
                   >
-                    <Card card={card} />
+                    <div style={{ position: 'relative', zIndex: hoveredAttachedCard && card.attachedCards?.includes(hoveredAttachedCard) ? 1 : 10 }}>
+                      <Card card={card} />
+                    </div>
+                    {/* Render attached cards beneath this card */}
+                    {card.attachedCards && card.attachedCards.length > 0 && (
+                      <>
+                        {card.attachedCards.map((attachedId, attachIndex) => {
+                          const attachedCard = cards.find(c => c.id === attachedId);
+                          if (!attachedCard) return null;
+                          const isHovered = hoveredAttachedCard === attachedId;
+                          return (
+                            <div
+                              key={attachedCard.id}
+                              style={{
+                                position: 'absolute',
+                                left: 0,
+                                top: (attachIndex + 1) * 40, // 40px offset for each attached card
+                                zIndex: isHovered ? 20 : attachIndex + 1, // Bring to front when hovered, otherwise stack below parent
+                              }}
+                            >
+                              <Card 
+                                card={attachedCard} 
+                                onHoverChange={(hovered) => setHoveredAttachedCard(hovered ? attachedId : null)}
+                              />
+                            </div>
+                          );
+                        })}
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
@@ -169,7 +204,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
     const cols = zone === ZoneEnum.HAND ? 12 : 10; // Hand can hold more cards
     const grid = Array.from({ length: rows }, (_, row) =>
       Array.from({ length: cols }, (_, col) => {
-        const stack = cards.filter(card => card.position?.row === row && card.position?.col === col);
+        const stack = topLevelCards.filter(card => card.position?.row === row && card.position?.col === col);
         return { row, col, stack };
       })
     );
@@ -236,7 +271,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
         data-zone-id={id || zone}
       >
         <div className="absolute top-2 left-2 text-white text-sm font-bold bg-gradient-to-r from-black to-gray-900 bg-opacity-70 px-3 py-1 rounded-lg border border-yellow-600 border-opacity-30 shadow-lg z-10">
-          {title} ({cards.length}) {isOver && '[OVER]'}
+          {title} ({topLevelCards.length}) {isOver && '[OVER]'}
         </div>
         <div 
           className="relative grid gap-1 w-full h-full p-2"

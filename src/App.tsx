@@ -8,17 +8,33 @@ import { Zone } from './types';
 
 function App() {
   const moveCard = useGameStore((state) => state.moveCard);
+  const loadCards = useGameStore((state) => state.loadCards);
+  const isLoading = useGameStore((state) => state.isLoading);
   const [activeCard, setActiveCard] = React.useState<string | null>(null);
+  const [isContextMenuDrag, setIsContextMenuDrag] = React.useState(false);
+
+  // Load cards from Scryfall on mount
+  React.useEffect(() => {
+    loadCards();
+  }, [loadCards]);
 
   // Configure sensors with activation constraints
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 150,
-        tolerance: 8,
+        delay: isContextMenuDrag ? 0 : 150,
+        tolerance: isContextMenuDrag ? 0 : 8,
       },
     })
   );
+
+  // Make setIsContextMenuDrag available globally for Card components
+  React.useEffect(() => {
+    (window as any).__setContextMenuDrag = setIsContextMenuDrag;
+    return () => {
+      delete (window as any).__setContextMenuDrag;
+    };
+  }, []);
 
   const handleDragStart = (event: DragStartEvent) => {
     console.log('Drag started for card ID:', event.active.id);
@@ -36,6 +52,7 @@ function App() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveCard(null);
+    setIsContextMenuDrag(false);
 
     if (!over) return;
 
@@ -66,6 +83,9 @@ function App() {
 
     // Only allow valid zones
     if (Object.values(Zone).includes(targetZone as Zone)) {
+      const card = useGameStore.getState().cards.find(c => c.id === cardId);
+      
+      // Move the main card
       if (targetZone === Zone.BATTLEFIELD && battlefieldHover) {
         moveCard(cardId, targetZone as Zone, battlefieldHover);
       } else if (targetZone === Zone.HAND && handHover) {
@@ -75,6 +95,14 @@ function App() {
       } else {
         moveCard(cardId, targetZone as Zone);
       }
+
+      // If the card has attached cards, move them too (only within battlefield)
+      if (card?.attachedCards && card.attachedCards.length > 0 && targetZone === Zone.BATTLEFIELD) {
+        const targetPosition = battlefieldHover || card.position;
+        card.attachedCards.forEach(attachedId => {
+          moveCard(attachedId, targetZone as Zone, targetPosition);
+        });
+      }
     }
     setBattlefieldHover(null);
     setHandHover(null);
@@ -82,6 +110,18 @@ function App() {
   };
 
   const activeCardData = useCardById(activeCard || '');
+
+  // Show loading state while cards are being fetched
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-green-900 via-green-800 to-green-950">
+        <div className="text-center">
+          <div className="text-yellow-400 text-2xl font-bold mb-4">Loading Cards...</div>
+          <div className="text-white text-sm">Fetching card data from Scryfall</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DndContext
