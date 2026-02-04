@@ -4,14 +4,29 @@ import { useDraggable } from '@dnd-kit/core';
 import type { Card as CardType } from '../types';
 import { Zone } from '../types';
 import { useGameStore } from '../store/gameStore';
+import { CardContextMenu } from './CardContextMenu';
+import { CardDetailsModal } from './CardDetailsModal';
 
 interface CardProps {
   card: CardType;
   isDraggable?: boolean;
+  zIndexOverride?: number;
+  onHoverChange?: (isHovered: boolean) => void;
 }
 
-export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true }) => {
+export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true, zIndexOverride, onHoverChange }) => {
   const tapCard = useGameStore((state) => state.tapCard);
+  const moveCard = useGameStore((state) => state.moveCard);
+  const attachCard = useGameStore((state) => state.attachCard);
+  const detachCard = useGameStore((state) => state.detachCard);
+  const startAttachmentMode = useGameStore((state) => state.startAttachmentMode);
+  const cancelAttachmentMode = useGameStore((state) => state.cancelAttachmentMode);
+  const attachmentMode = useGameStore((state) => state.attachmentMode);
+  
+  const [contextMenuOpen, setContextMenuOpen] = React.useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = React.useState({ x: 0, y: 0 });
+  const [detailsModalOpen, setDetailsModalOpen] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
   
   const {
     attributes,
@@ -23,6 +38,91 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
     id: card.id,
     disabled: !isDraggable,
   });
+
+  // Handle right-click
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+    setContextMenuOpen(true);
+  };
+
+  // Handle "Pick up" - initiate drag
+  const handlePickUp = () => {
+    // Set context menu drag mode for zero-delay sensor
+    if ((window as any).__setContextMenuDrag) {
+      (window as any).__setContextMenuDrag(true);
+    }
+    
+    // Get the card element
+    const element = (setNodeRef as any).current || document.getElementById(`card-${card.id}`);
+    if (element) {
+      // Dispatch synthetic pointer event to start drag
+      const rect = element.getBoundingClientRect();
+      const syntheticEvent = new PointerEvent('pointerdown', {
+        bubbles: true,
+        cancelable: true,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      element.dispatchEvent(syntheticEvent);
+    }
+  };
+
+  const handleTap = () => {
+    tapCard(card.id);
+  };
+
+  const handleMoveToGraveyard = () => {
+    moveCard(card.id, Zone.GRAVEYARD);
+  };
+
+  const handleExile = () => {
+    // For now, exile to graveyard (you can add a separate EXILE zone later)
+    moveCard(card.id, Zone.GRAVEYARD);
+  };
+
+  const handleViewDetails = () => {
+    console.log('View details for:', card.name);
+    setDetailsModalOpen(true);
+  };
+
+  const handleAttach = () => {
+    startAttachmentMode(card.id);
+  };
+
+  const handleDetach = () => {
+    detachCard(card.id);
+  };
+
+  // Handle click during attachment mode
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (attachmentMode.active && attachmentMode.sourceCardId) {
+      // Don't attach to self
+      if (card.id !== attachmentMode.sourceCardId) {
+        e.stopPropagation();
+        attachCard(attachmentMode.sourceCardId, card.id);
+      }
+    }
+  };
+
+  // Cancel attachment mode when clicking outside
+  React.useEffect(() => {
+    if (!attachmentMode.active) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      // If clicking outside any card, cancel attachment mode
+      const target = e.target as HTMLElement;
+      if (!target.closest('.card')) {
+        cancelAttachmentMode();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [attachmentMode.active, cancelAttachmentMode]);
 
   // Handle double-click for tapping
   const handleCardDoubleClick = (e: React.MouseEvent) => {
@@ -43,14 +143,33 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
   } : undefined;
 
   return (
-    <motion.div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...(isDraggable ? listeners : {})}
-      className={`card relative w-[6vw] h-[8.4vw] max-w-[120px] max-h-[168px] min-w-[80px] min-h-[112px] rounded-lg border-2 border-gray-800 cursor-pointer shadow-lg overflow-hidden flex-shrink-0 ${
+    <>
+      <motion.div
+        ref={setNodeRef}
+        {...attributes}
+        {...(isDraggable && !card.attachedTo ? listeners : {})}
+        onContextMenu={handleContextMenu}
+        onClick={handleCardClick}
+        onMouseEnter={() => {
+          setIsHovered(true);
+          onHoverChange?.(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          onHoverChange?.(false);
+        }}
+        id={`card-${card.id}`}
+        style={{
+          ...style,
+          zIndex: zIndexOverride !== undefined ? zIndexOverride : undefined,
+        }}
+      className={`card relative w-[6vw] h-[8.4vw] max-w-[120px] max-h-[168px] min-w-[80px] min-h-[112px] rounded-lg cursor-pointer shadow-lg overflow-hidden flex-shrink-0 ${
         isDragging ? 'dragging' : ''
-      } ${card.tapped ? 'origin-center' : ''}`}
+      } ${card.tapped ? 'origin-center' : ''} ${
+        attachmentMode.active && isHovered && card.id !== attachmentMode.sourceCardId && card.zone === Zone.BATTLEFIELD
+          ? 'ring-4 ring-yellow-400 ring-opacity-80'
+          : 'border-2 border-gray-800'
+      }`}
       animate={{
         rotate: card.tapped ? 90 : 0,
         scale: isDragging ? 1.05 : 1,
@@ -96,5 +215,30 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true 
       </div>
 
     </motion.div>
+
+    <CardContextMenu
+      isOpen={contextMenuOpen}
+      position={contextMenuPosition}
+      onClose={() => setContextMenuOpen(false)}
+      onPickUp={handlePickUp}
+      onTap={handleTap}
+      onMoveToGraveyard={handleMoveToGraveyard}
+      onExile={handleExile}
+      onViewDetails={handleViewDetails}
+      onAttach={handleAttach}
+      onDetach={handleDetach}
+      cardName={card.name}
+      isTapped={card.tapped}
+      isOnBattlefield={card.zone === Zone.BATTLEFIELD}
+      isAttached={!!card.attachedTo}
+    />
+
+    <CardDetailsModal
+      isOpen={detailsModalOpen}
+      onClose={() => setDetailsModalOpen(false)}
+      cardName={card.name}
+      imageUrl={card.imageUrl}
+    />
+    </>
   );
 });
