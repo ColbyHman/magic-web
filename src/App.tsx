@@ -6,7 +6,7 @@ import { Card } from './components/Card';
 import { PhaseIndicator } from './components/PhaseIndicator';
 import { HamburgerMenu } from './components/HamburgerMenu';
 import { Home } from './pages/Home';
-import { MyLibrary } from './pages/MyLibrary';
+import { CardVault } from './pages/CardVault';
 import { Game } from './pages/Game';
 import { Zone } from './types';
 
@@ -129,9 +129,10 @@ function App() {
     <Router>
       <HamburgerMenu />
       
-      <Routes>
+      <div className="w-full h-screen overflow-auto">
+        <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/library" element={<MyLibrary />} />
+        <Route path="/library" element={<CardVault />} />
         <Route 
           path="/games/battlefield" 
           element={
@@ -155,6 +156,7 @@ function App() {
           } 
         />
       </Routes>
+      </div>
     </Router>
   );
 }

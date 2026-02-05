@@ -13,10 +13,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
     setIsOpen(!isOpen);
   };
 
-  const closeMenu = () => {
-    console.log('Closing menu');
-    setIsOpen(false);
-  };
+  
 
   return (
     <div className={`fixed top-4 left-4 z-50 ${className}`}>
@@ -47,7 +44,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
               to="/library"
               className="block px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 transition-colors duration-200"
             >
-              My Library
+              Card Vault
             </Link>
             <div className="border-t border-gray-600 border-opacity-30 my-2"></div>
             <div className="px-4 py-2 text-gray-400 text-sm font-semibold">
@@ -63,17 +60,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
         </div>
       )}
 
-      {/* Overlay to close menu when clicking outside */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          style={{ pointerEvents: 'none' }}
-          onClick={(e) => {
-            e.stopPropagation();
-            closeMenu();
-          }}
-        />
-      )}
+      
     </div>
   );
 };

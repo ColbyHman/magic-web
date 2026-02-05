@@ -40,16 +40,16 @@ export const Home: React.FC = () => {
             <div className="flex items-center justify-center w-12 h-12 bg-blue-500 bg-opacity-20 rounded-lg mb-4 mx-auto">
               <BookOpenIcon className="h-6 w-6 text-blue-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2 text-center">My Library</h2>
+            <h2 className="text-xl font-semibold text-white mb-2 text-center">Card Vault</h2>
             <p className="text-gray-300 text-center mb-4">
-              Browse and manage your card collection. Build decks and explore your library.
+              Browse and manage your comprehensive card collection. Track your valuable assets.
             </p>
             <div className="text-center">
               <Link
                 to="/library"
                 className="inline-block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 transition-colors duration-200 font-semibold"
               >
-                Browse Library
+                Browse Vault
               </Link>
             </div>
           </div>

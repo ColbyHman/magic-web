@@ -6,7 +6,11 @@ body {
   min-height: 100vh;
   background: radial-gradient(ellipse at center, #2d5016 0%, #1a3009 50%, #0f1f05 100%);
   font-family: 'Segoe UI', system-ui, sans-serif;
-  overflow: hidden;
+  overflow: auto;
+}
+
+html {
+  overflow: auto;
 }
 
 .card-back {
