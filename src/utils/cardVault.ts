@@ -567,6 +567,9 @@ function convertToVaultCard(sampleCard: any): VaultCard {
   const colorIdentity = sampleCard.colors || [];
   const keywords = sampleCard.keywords || [];
 
+  // Debug: log color identity conversion
+  console.log(`Converting ${sampleCard.name}: colors =`, colorIdentity);
+
   // Create fallback image URLs that should work better
   const fallbackImages = {
     'swords-to-plowshares': 'https://cards.scryfall.io/large/front/2/8/28c6b0b2-0c4b-4f5a-9b0a-0e8f0c0b0c.jpg?1562795126',
@@ -577,17 +580,23 @@ function convertToVaultCard(sampleCard: any): VaultCard {
     'black-lotus': 'https://cards.scryfall.io/large/front/8/4/84c6b0b2-0c4b-4f5a-9b0a-0e8f0c0b0c25.jpg?1562795126'
   };
 
-  // Determine rarity
-  let rarity: VaultCard['rarity'] = 'Common';
-  switch (sampleCard.rarity) {
-    case 'common': rarity = 'Common'; break;
-    case 'uncommon': rarity = 'Uncommon'; break;
-    case 'rare': rarity = 'Rare'; break;
-    case 'mythic': rarity = 'Mythic Rare'; break;
-    default: rarity = 'Special'; break;
-  }
+  // Determine rarity - use direct mapping
+  const rarityMap: Record<string, VaultCard['rarity']> = {
+    'common': 'Common',
+    'uncommon': 'Uncommon', 
+    'rare': 'Rare',
+    'mythic': 'Mythic Rare',
+    'mythic rare': 'Mythic Rare'
+  };
+  
+  const sampleRarity = sampleCard.rarity?.toString().trim().toLowerCase();
+  const rarity = rarityMap[sampleRarity] || 'Special';
+  
+  console.log(`Rarity conversion: ${sampleCard.name}: "${sampleCard.rarity}" -> "${sampleRarity}" -> ${rarity}`);
 
-  return {
+  console.log(`Rarity conversion: ${sampleCard.name}: ${sampleCard.rarity} -> ${rarity}`);
+
+  const vaultCard = {
     id: sampleCard.id,
     name: sampleCard.name,
     manaCost: sampleCard.manaCost || '',
@@ -605,6 +614,9 @@ function convertToVaultCard(sampleCard: any): VaultCard {
     colorIdentity,
     keywords
   };
+
+  console.log(`Converted ${sampleCard.name}: colorIdentity =`, vaultCard.colorIdentity);
+  return vaultCard;
 }
 
 /**

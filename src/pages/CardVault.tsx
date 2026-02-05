@@ -21,6 +21,13 @@ export const CardVault: React.FC = () => {
       try {
         setLoading(true);
         const vaultCards = await initializeCardVault();
+        console.log('Loaded cards sample:', vaultCards.slice(0, 3).map(card => ({
+          name: card.name,
+          colorIdentity: card.colorIdentity,
+          rarity: card.rarity,
+          type: card.type,
+          favorite: card.favorite
+        })));
         setCards(vaultCards);
         setFilteredCards(vaultCards);
         setStats(getVaultStats(vaultCards));
@@ -36,6 +43,15 @@ export const CardVault: React.FC = () => {
   // Apply filters whenever they change
   useEffect(() => {
     if (cards.length > 0) {
+      console.log('Applying filters:', {
+        searchTerm,
+        selectedColor,
+        selectedRarity,
+        selectedType,
+        showFavoritesOnly,
+        totalCards: cards.length
+      });
+      
       // Simple test: just return all cards for now
       let filtered = cards;
       
@@ -45,18 +61,40 @@ export const CardVault: React.FC = () => {
           card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           card.type.toLowerCase().includes(searchTerm.toLowerCase())
         );
+        console.log('After search filter:', filtered.length);
       }
       
       // Apply color filter
       if (selectedColor && selectedColor !== 'All') {
+        // Map full color names to single letters
+        const colorMap: Record<string, string> = {
+          'White': 'W',
+          'Blue': 'U', 
+          'Black': 'B',
+          'Red': 'R',
+          'Green': 'G',
+          'Colorless': ''
+        };
+        
+        const colorLetter = colorMap[selectedColor];
         filtered = filtered.filter(card => 
-          card.colorIdentity.includes(selectedColor)
+          colorLetter === '' ? card.colorIdentity.length === 0 : card.colorIdentity.includes(colorLetter)
         );
+        console.log('After color filter:', filtered.length);
       }
       
       // Apply rarity filter
       if (selectedRarity && selectedRarity !== 'All') {
-        filtered = filtered.filter(card => card.rarity === selectedRarity);
+        console.log('Filtering by rarity:', selectedRarity);
+        console.log('Available rarities:', [...new Set(cards.map(c => c.rarity))]);
+        filtered = filtered.filter(card => {
+          const matches = card.rarity === selectedRarity;
+          if (!matches) {
+            console.log(`Card "${card.name}" rarity "${card.rarity}" != "${selectedRarity}"`);
+          }
+          return matches;
+        });
+        console.log('After rarity filter:', filtered.length);
       }
       
       // Apply type filter
@@ -64,13 +102,16 @@ export const CardVault: React.FC = () => {
         filtered = filtered.filter(card => 
           card.type.toLowerCase().includes(selectedType.toLowerCase())
         );
+        console.log('After type filter:', filtered.length);
       }
       
       // Apply favorite filter
       if (showFavoritesOnly) {
         filtered = filtered.filter(card => card.favorite);
+        console.log('After favorite filter:', filtered.length);
       }
       
+      console.log('Final filtered count:', filtered.length);
       setFilteredCards(filtered);
     }
   }, [cards, searchTerm, selectedColor, selectedRarity, selectedType, showFavoritesOnly]);
@@ -86,15 +127,6 @@ export const CardVault: React.FC = () => {
   };
 
   const colors = ['All', 'White', 'Blue', 'Black', 'Red', 'Green', 'Colorless'];
-  const colorClasses = {
-    'All': 'bg-gray-500',
-    'White': 'bg-white',
-    'Blue': 'bg-blue-500',
-    'Black': 'bg-black',
-    'Red': 'bg-red-500',
-    'Green': 'bg-green-500',
-    'Colorless': 'bg-gray-400'
-  };
 
   const rarities = ['All', 'Common', 'Uncommon', 'Rare', 'Mythic Rare', 'Special'];
   const rarityClasses = {
@@ -168,7 +200,10 @@ export const CardVault: React.FC = () => {
 
             {/* Favorites Toggle */}
             <button
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              onClick={() => {
+                    console.log('Favorites toggled:', !showFavoritesOnly);
+                    setShowFavoritesOnly(!showFavoritesOnly);
+                  }}
               className={`px-4 py-2 rounded-lg border-2 transition-all duration-200 flex items-center gap-2 ${
                 showFavoritesOnly 
                   ? 'border-red-400 bg-red-400 bg-opacity-20' 
@@ -193,7 +228,10 @@ export const CardVault: React.FC = () => {
                 {colors.map(color => (
                   <button
                     key={color}
-                    onClick={() => setSelectedColor(color)}
+                    onClick={() => {
+                    console.log('Color selected:', color);
+                    setSelectedColor(color);
+                  }}
                     className={`px-3 py-2 rounded-lg border-2 transition-all duration-200 ${
                       selectedColor === color
                         ? 'border-yellow-400 shadow-lg'
@@ -201,7 +239,15 @@ export const CardVault: React.FC = () => {
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded ${colorClasses[color as keyof typeof colorClasses]} ${color === 'White' ? 'border border-gray-300' : ''}`}></div>
+                      <div className={`w-4 h-4 rounded ${
+                      color === 'White' ? 'bg-white border border-gray-300' :
+                      color === 'Blue' ? 'bg-blue-500' :
+                      color === 'Black' ? 'bg-black' :
+                      color === 'Red' ? 'bg-red-500' :
+                      color === 'Green' ? 'bg-green-500' :
+                      color === 'Colorless' ? 'bg-gray-400' :
+                      'bg-gray-500'
+                    }`}></div>
                       <span className="text-white text-sm">{color}</span>
                     </div>
                   </button>
@@ -216,7 +262,10 @@ export const CardVault: React.FC = () => {
                 {rarities.map(rarity => (
                   <button
                     key={rarity}
-                    onClick={() => setSelectedRarity(rarity)}
+                    onClick={() => {
+                    console.log('Rarity selected:', rarity);
+                    setSelectedRarity(rarity);
+                  }}
                     className={`px-3 py-2 rounded-lg border-2 transition-all duration-200 ${
                       selectedRarity === rarity
                         ? 'border-yellow-400 shadow-lg'
@@ -239,7 +288,10 @@ export const CardVault: React.FC = () => {
                 {mainTypes.map(type => (
                   <button
                     key={type}
-                    onClick={() => setSelectedType(type)}
+                    onClick={() => {
+                    console.log('Type selected:', type);
+                    setSelectedType(type);
+                  }}
                     className={`px-3 py-2 rounded-lg border-2 transition-all duration-200 ${
                       selectedType === type
                         ? 'border-yellow-400 shadow-lg'
@@ -293,7 +345,15 @@ export const CardVault: React.FC = () => {
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center">
-                    <div className={`w-16 h-20 rounded-lg ${colorClasses[card.colorIdentity[0] as keyof typeof colorClasses] || 'bg-gray-500'} mb-2 flex items-center justify-center`}>
+                    <div className={`w-16 h-20 rounded-lg mb-2 flex items-center justify-center ${
+                      card.colorIdentity.length === 0 ? 'bg-gray-500' :
+                      card.colorIdentity.includes('W') ? 'bg-white border border-gray-300' :
+                      card.colorIdentity.includes('U') ? 'bg-blue-500' :
+                      card.colorIdentity.includes('B') ? 'bg-black' :
+                      card.colorIdentity.includes('R') ? 'bg-red-500' :
+                      card.colorIdentity.includes('G') ? 'bg-green-500' :
+                      'bg-gray-500'
+                    }`}>
                       <span className="text-white text-lg font-bold">
                         {card.manaCost ? card.manaCost.replace(/[{}]/g, '') : '🎴'}
                       </span>
