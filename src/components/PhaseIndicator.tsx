@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { Phase, Step } from '../types';
+import { useAccentColors } from '../utils/useAccentColors';
 
 const phaseNames: Record<Phase, string> = {
   beginning: 'Beginning',
@@ -39,6 +40,7 @@ export const PhaseIndicator: React.FC = React.memo(() => {
   const advanceStep = useGameStore((state) => state.advanceStep);
   const skipToEnd = useGameStore((state) => state.skipToEnd);
   const passToNextTurn = useGameStore((state) => state.passToNextTurn);
+  const accentColors = useAccentColors();
 
   const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -113,7 +115,7 @@ export const PhaseIndicator: React.FC = React.memo(() => {
               }}
               className={`${
                 showPassButton 
-                  ? 'bg-purple-700 hover:bg-purple-600' 
+                  ? accentColors.buttonPrimary
                   : 'bg-green-700 hover:bg-green-600'
               } text-white font-bold py-2 px-4 rounded transition-colors text-sm`}
             >
