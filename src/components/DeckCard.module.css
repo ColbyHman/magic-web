@@ -1,0 +1,232 @@
+.deckCard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: rgba(30, 30, 40, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.deckCard:hover {
+  background: rgba(40, 40, 50, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(4px);
+}
+
+.deckCard.commander {
+  border: 2px solid #ffd700;
+  background: rgba(50, 45, 30, 0.8);
+}
+
+.deckCard.commander:hover {
+  background: rgba(60, 55, 35, 0.9);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+}
+
+.deckCard.warning {
+  border-color: rgba(255, 200, 0, 0.5);
+}
+
+.imageContainer {
+  position: relative;
+  width: 50px;
+  height: 70px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(60, 60, 70, 0.5);
+  font-size: 10px;
+  text-align: center;
+  padding: 4px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.commanderBadge {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.warningBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(255, 200, 0, 0.9);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: help;
+}
+
+.cardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cardName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardType {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.manaCost {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Courier New', monospace;
+}
+
+.quantityControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.quantityBtn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.quantityBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.quantityBtn:active {
+  transform: scale(0.95);
+}
+
+.quantity {
+  min-width: 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sideboardBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(100, 100, 200, 0.8);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.removeBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(200, 50, 50, 0.9);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.removeBtn:hover {
+  background: rgba(220, 60, 60, 1);
+  transform: scale(1.1);
+}
+
+.contextMenu {
+  position: fixed;
+  background: rgba(30, 30, 40, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 10000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  min-width: 180px;
+}
+
+.contextMenuItem {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.contextMenuItem:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.contextMenuItem.danger {
+  color: #ff6b6b;
+}
+
+.contextMenuItem.danger:hover {
+  background: rgba(255, 100, 100, 0.2);
+}

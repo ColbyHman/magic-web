@@ -1,11 +1,28 @@
 import { create } from 'zustand';
 import React from 'react';
-import type { Card, GameState, GameActions, Zone as ZoneType, Phase, Step } from '../types';
+import type { Card, GameCard, GameState, GameActions, Zone as ZoneType, Phase, Step } from '../types';
 import { Zone, Phase as PhaseEnum, Step as StepEnum } from '../types';
 import { initializeCards } from '../utils/initializeCards';
 
 // Initial empty cards array - will be populated from Scryfall
-const initialCards: Card[] = [];
+const initialCards: GameCard[] = [];
+
+/**
+ * Create a GameCard from a base Card with game state
+ */
+export function createGameCard(
+  card: Card,
+  zone: ZoneType,
+  position?: { row: number; col: number }
+): GameCard {
+  return {
+    ...card,
+    instanceId: crypto.randomUUID(),
+    zone,
+    tapped: false,
+    position,
+  };
+}
 
 type GameStore = GameState & GameActions & {
   loadCards: () => Promise<void>;
@@ -40,11 +57,11 @@ export const useGameStore = create<GameStore>((set) => ({
       // Detach all attachments if moving away from battlefield
       let updatedCards = state.cards;
       if (toZone !== Zone.BATTLEFIELD) {
-        const card = state.cards.find(c => c.id === cardId);
+        const card = state.cards.find(c => c.instanceId === cardId);
         if (card?.attachedCards && card.attachedCards.length > 0) {
           // Detach all children
           updatedCards = updatedCards.map(c => {
-            if (card.attachedCards?.includes(c.id)) {
+            if (card.attachedCards?.includes(c.instanceId)) {
               return { ...c, attachedTo: undefined };
             }
             return c;
@@ -53,7 +70,7 @@ export const useGameStore = create<GameStore>((set) => ({
         if (card?.attachedTo) {
           // Remove from parent's attachedCards array
           updatedCards = updatedCards.map(c => {
-            if (c.id === card.attachedTo) {
+            if (c.instanceId === card.attachedTo) {
               return {
                 ...c,
                 attachedCards: c.attachedCards?.filter(id => id !== cardId),
@@ -84,7 +101,7 @@ export const useGameStore = create<GameStore>((set) => ({
           }
         }
         const newCards = updatedCards.map((card) =>
-          card.id === cardId
+          card.instanceId === cardId
             ? { ...card, zone: toZone, tapped: false, position: pos }
             : card
         );
@@ -93,7 +110,7 @@ export const useGameStore = create<GameStore>((set) => ({
       } else {
         // Remove position if not on battlefield, hand, or lands
         const newCards = updatedCards.map((card) =>
-          card.id === cardId
+          card.instanceId === cardId
             ? { ...card, zone: toZone, tapped: false, position: undefined }
             : card
         );
@@ -106,7 +123,7 @@ export const useGameStore = create<GameStore>((set) => ({
   tapCard: (cardId: string) => {
     set((state) => ({
       cards: state.cards.map((card) =>
-        card.id === cardId
+        card.instanceId === cardId
           ? { ...card, tapped: !card.tapped }
           : card
       ),
@@ -181,8 +198,8 @@ export const useGameStore = create<GameStore>((set) => ({
 
   attachCard: (childId: string, parentId: string) => {
     set((state) => {
-      const child = state.cards.find(c => c.id === childId);
-      const parent = state.cards.find(c => c.id === parentId);
+      const child = state.cards.find(c => c.instanceId === childId);
+      const parent = state.cards.find(c => c.instanceId === parentId);
 
       // Only allow attachment on battlefield
       if (!child || !parent || child.zone !== Zone.BATTLEFIELD || parent.zone !== Zone.BATTLEFIELD) {
@@ -196,10 +213,10 @@ export const useGameStore = create<GameStore>((set) => ({
 
       // Update cards
       const newCards = state.cards.map(card => {
-        if (card.id === childId) {
+        if (card.instanceId === childId) {
           // If child was already attached to another card, remove it from that parent first
           if (child.attachedTo) {
-            const oldParent = state.cards.find(c => c.id === child.attachedTo);
+            const oldParent = state.cards.find(c => c.instanceId === child.attachedTo);
             if (oldParent) {
               const oldParentIndex = state.cards.indexOf(oldParent);
               state.cards[oldParentIndex] = {
@@ -215,7 +232,7 @@ export const useGameStore = create<GameStore>((set) => ({
             position: parent.position,
           };
         }
-        if (card.id === parentId) {
+        if (card.instanceId === parentId) {
           // Add child to parent's attachedCards array
           return {
             ...card,
@@ -234,21 +251,21 @@ export const useGameStore = create<GameStore>((set) => ({
 
   detachCard: (childId: string) => {
     set((state) => {
-      const child = state.cards.find(c => c.id === childId);
+      const child = state.cards.find(c => c.instanceId === childId);
       if (!child || !child.attachedTo) {
         return state;
       }
 
       const parentId = child.attachedTo;
       const newCards = state.cards.map(card => {
-        if (card.id === childId) {
+        if (card.instanceId === childId) {
           // Remove attachedTo, keep same position
           return {
             ...card,
             attachedTo: undefined,
           };
         }
-        if (card.id === parentId) {
+        if (card.instanceId === parentId) {
           // Remove child from parent's attachedCards array
           return {
             ...card,
@@ -293,6 +310,6 @@ export const useCardsInZone = (zone: ZoneType) => {
 export const useCardById = (cardId: string) => {
   const cards = useGameStore((state) => state.cards);
   return React.useMemo(() =>
-    cards.find((card) => card.id === cardId)
+    cards.find((card) => card.instanceId === cardId)
     , [cards, cardId]);
 };
