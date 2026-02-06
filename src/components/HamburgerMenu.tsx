@@ -41,6 +41,12 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
               Home
             </Link>
             <Link
+              to="/profile"
+              className="block px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 transition-colors duration-200"
+            >
+              My Profile
+            </Link>
+            <Link
               to="/library"
               className="block px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 transition-colors duration-200"
             >

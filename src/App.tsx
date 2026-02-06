@@ -8,6 +8,7 @@ import { HamburgerMenu } from './components/HamburgerMenu';
 import { Home } from './pages/Home';
 import { CardVault } from './pages/CardVault';
 import { Game } from './pages/Game';
+import { Profile } from './pages/Profile';
 import { Zone } from './types';
 
 function App() {
@@ -133,6 +134,7 @@ function App() {
         <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/library" element={<CardVault />} />
+        <Route path="/profile" element={<Profile />} />
         <Route 
           path="/games/battlefield" 
           element={
