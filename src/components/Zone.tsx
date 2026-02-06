@@ -149,7 +149,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
               <div className={styles.cardContainer}>
                 {stack.map((card, i) => (
                   <div
-                    key={card.id}
+                    key={card.instanceId}
                     className={styles.cardStackOffset}
                     style={{
                       left: i * 8,
@@ -164,12 +164,12 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
                     {card.attachedCards && card.attachedCards.length > 0 && (
                       <>
                         {card.attachedCards.map((attachedId, attachIndex) => {
-                          const attachedCard = cards.find(c => c.id === attachedId);
+                          const attachedCard = cards.find(c => c.instanceId === attachedId);
                           if (!attachedCard) return null;
                           const isHovered = hoveredAttachedCard === attachedId;
                           return (
                             <div
-                              key={attachedCard.id}
+                              key={attachedCard.instanceId}
                               style={{
                                 position: 'absolute',
                                 left: 0,
@@ -305,7 +305,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
               <div className={styles.cardContainer}>
                 {stack.map((card, index) => (
                   <div
-                    key={card.id}
+                    key={card.instanceId}
                     className={styles.cardStackOffset}
                     style={{
                       left: index * 8, // Smaller offset for hand/lands
@@ -339,7 +339,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
           {children}
           {cards.map((card, index) => (
             <div
-              key={card.id}
+              key={card.instanceId}
               className={styles.cardStackOffset}
               style={{
                 bottom: `${index * 8}px`,
@@ -374,7 +374,7 @@ export const ZoneComponent: React.FC<ZoneProps> = React.memo(({ zone, title, cla
         {children}
         {cards.map((card) => {
           console.log('Rendering Card component:', card.name, 'in zone:', zone);
-          return <Card key={card.id} card={card} />;
+          return <Card key={card.instanceId} card={card} />;
         })}
       </div>
     </div>

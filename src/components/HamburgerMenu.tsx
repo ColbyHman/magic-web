@@ -40,11 +40,21 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
             >
               Home
             </Link>
+            <div className="border-t border-gray-600 border-opacity-30 my-2"></div>
+            <div className="px-4 py-2 text-gray-400 text-sm font-semibold">
+              My Collection
+            </div>
             <Link
               to="/library"
-              className="block px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 transition-colors duration-200"
+              className="block px-6 py-2 text-white hover:bg-white hover:bg-opacity-20 transition-colors duration-200 ml-4"
             >
               Card Vault
+            </Link>
+            <Link
+              to="/library/decks"
+              className="block px-6 py-2 text-white hover:bg-white hover:bg-opacity-20 transition-colors duration-200 ml-4"
+            >
+              Decks
             </Link>
             <div className="border-t border-gray-600 border-opacity-30 my-2"></div>
             <div className="px-4 py-2 text-gray-400 text-sm font-semibold">

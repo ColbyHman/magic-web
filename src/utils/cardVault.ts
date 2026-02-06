@@ -598,6 +598,7 @@ function convertToVaultCard(sampleCard: any): VaultCard {
 
   const vaultCard = {
     id: sampleCard.id,
+    scryfallId: sampleCard.id,
     name: sampleCard.name,
     manaCost: sampleCard.manaCost || '',
     type: sampleCard.type,

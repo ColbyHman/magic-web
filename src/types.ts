@@ -43,36 +43,47 @@ export const Step = {
 
 export type Step = typeof Step[keyof typeof Step];
 
+// Deck-related types
+export type Format = 'standard' | 'commander' | 'modern' | 'legacy' | 'vintage' | 'casual';
+export type LegalityStatus = 'legal' | 'not_legal' | 'restricted' | 'banned';
+
+// Base Card interface representing immutable Scryfall data
 export interface Card {
-  id: string;
+  scryfallId: string; // Unique Scryfall ID (primary identifier)
   name: string;
   manaCost: string;
   type: string;
+  oracleText?: string;
+  power?: string;
+  toughness?: string;
+  colors?: string[];
+  colorIdentity?: string[];
+  cmc?: number;
+  imageUrl?: string;
+  rarity?: string;
+  set?: string;
+  collectorNumber?: string;
+  legalities?: Record<Format, LegalityStatus>;
+}
+
+// GameCard extends Card with mutable game state
+export interface GameCard extends Card {
+  instanceId: string; // Unique UUID for this card instance in the game
   zone: Zone;
   tapped: boolean;
+  position?: { row: number; col: number };
+  attachedTo?: string; // instanceId of the card this card is attached to
+  attachedCards?: string[]; // instanceIds of cards attached to this card
 }
 
 export interface GameState {
-  cards: Card[];
+  cards: GameCard[];
   currentPhase: Phase;
   currentStep: Step;
   attachmentMode: {
     active: boolean;
     sourceCardId: string | null;
   };
-}
-
-export interface Card {
-  id: string;
-  name: string;
-  manaCost: string;
-  type: string;
-  zone: Zone;
-  tapped: boolean;
-  position?: { row: number; col: number };
-  imageUrl?: string;
-  attachedTo?: string; // ID of the card this card is attached to
-  attachedCards?: string[]; // IDs of cards attached to this card
 }
 
 export interface BattlefieldProps {
@@ -91,4 +102,53 @@ export interface GameActions {
   advanceStep: () => void;
   skipToEnd: () => void;
   passToNextTurn: () => void;
+}
+
+// DeckEntry represents a card in a deck with metadata
+export interface DeckEntry {
+  card: Card; // Full Card object with all Scryfall data
+  quantity: number;
+  isSideboard: boolean;
+  isCommander: boolean;
+  category?: 'Creature' | 'Removal' | 'Ramp' | 'Draw' | 'Win Con' | 'Other';
+  notes?: string;
+}
+
+export interface Deck {
+  id: string;
+  name: string;
+  description?: string;
+  format: Format;
+  cards: DeckEntry[];
+  createdAt: Date;
+  updatedAt: Date;
+  lastPlayed?: Date;
+  colors: string[];
+  cardCount: number;
+  isFavorite?: boolean;
+  tags?: string[];
+}
+
+export interface DeckStats {
+  totalCards: number;
+  mainDeckCount: number;
+  sideboardCount: number;
+  commanderCount: number;
+  averageCMC: number;
+  manaCurve: Record<number, number>;
+  colorDistribution: Record<string, number>;
+  typeDistribution: Record<string, number>;
+}
+
+export type ValidationSeverity = 'error' | 'warning';
+
+export interface ValidationWarning {
+  severity: ValidationSeverity;
+  message: string;
+  cardNames?: string[];
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  warnings: ValidationWarning[];
 }
