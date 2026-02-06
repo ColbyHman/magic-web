@@ -1,9 +1,13 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { DndContext, type DragEndEvent, type DragStartEvent, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useGameStore, useCardById } from './store/gameStore';
-import { Battlefield } from './components/Battlefield';
 import { Card } from './components/Card';
 import { PhaseIndicator } from './components/PhaseIndicator';
+import { HamburgerMenu } from './components/HamburgerMenu';
+import { Home } from './pages/Home';
+import { CardVault } from './pages/CardVault';
+import { Game } from './pages/Game';
 import { Zone } from './types';
 
 function App() {
@@ -46,8 +50,6 @@ function App() {
   const [handHover, setHandHover] = React.useState<{ row: number; col: number } | null>(null);
   const [landsHover, setLandsHover] = React.useState<{ row: number; col: number } | null>(null);
   console.log('Hover cells - Battlefield:', battlefieldHover, 'Hand:', handHover, 'Lands:', landsHover);
-  
-  // Pass setBattlefieldHover to ZoneComponent for battlefield
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -124,25 +126,38 @@ function App() {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <PhaseIndicator />
+    <Router>
+      <HamburgerMenu />
       
-      <div className="w-full h-screen overflow-hidden">
-        <Battlefield setBattlefieldHover={setBattlefieldHover} setHandHover={setHandHover} setLandsHover={setLandsHover} />
+      <div className="w-full h-screen overflow-auto">
+        <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/library" element={<CardVault />} />
+        <Route 
+          path="/games/battlefield" 
+          element={
+            <DndContext
+              sensors={sensors}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="w-full h-screen overflow-hidden bg-gradient-to-br from-green-900 via-green-800 to-green-950">
+                <PhaseIndicator />
+                <Game setBattlefieldHover={setBattlefieldHover} setHandHover={setHandHover} setLandsHover={setLandsHover} />
+              </div>
+              <DragOverlay>
+                {activeCardData && (
+                  <div className="rotate-6">
+                    <Card card={activeCardData} isDraggable={false} />
+                  </div>
+                )}
+              </DragOverlay>
+            </DndContext>
+          } 
+        />
+      </Routes>
       </div>
-
-      <DragOverlay>
-        {activeCardData && (
-          <div className="rotate-6">
-            <Card card={activeCardData} isDraggable={false} />
-          </div>
-        )}
-      </DragOverlay>
-    </DndContext>
+    </Router>
   );
 }
 

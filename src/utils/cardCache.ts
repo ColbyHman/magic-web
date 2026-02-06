@@ -22,6 +22,10 @@ export interface ScryfallCard {
       large: string;
     };
   }>;
+  colors?: string[];
+  rarity?: string;
+  set?: string;
+  collector_number?: string;
 }
 
 // In-memory cache that starts with the imported JSON data
