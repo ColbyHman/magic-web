@@ -19,10 +19,10 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
   return (
     <>
       {/* Hamburger button */}
-      <div className={`fixed top-4 left-4 z-50 ${className}`}>
+      <div className={`fixed top-6 left-6 z-50 ${className}`}>
         <button
           onClick={toggleMenu}
-          className="p-2 bg-black bg-opacity-50 hover:bg-opacity-60 text-white rounded-lg transition-all duration-200 backdrop-blur-sm"
+          className="p-3 bg-gray-800 bg-opacity-80 hover:bg-opacity-100 text-white rounded-xl transition-all duration-200 backdrop-blur-sm border border-gray-700"
           aria-label="Toggle menu"
         >
           {isOpen ? (
@@ -40,10 +40,10 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
             {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: 0.65 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black bg-opacity-50 z-40"
+              className="fixed inset-0 bg-black bg-opacity-100 z-40"
               onClick={toggleMenu}
             />
 
@@ -53,7 +53,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-full w-80 bg-gray-900 bg-opacity-95 backdrop-blur-md shadow-2xl border-r border-gray-600 border-opacity-30 z-50"
+              className="fixed top-0 left-0 h-full w-80 bg-gray-900 bg-opacity-15 backdrop-blur-md shadow-2xl border-r border-gray-600 border-opacity-30 z-50"
             >
               <div className="p-6">
                 {/* Drawer Header */}
