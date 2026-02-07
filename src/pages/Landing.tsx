@@ -16,8 +16,8 @@ export const Landing: React.FC = () => {
     {
       icon: UsersIcon,
       title: 'Play with Friends',
-      description: 'Start casual games with your Magic buddies anytime, anywhere.',
-      highlights: ['No waiting in queues', 'Play with people you know', 'Casual format only']
+      description: 'Start games with your friends anytime, anywhere.',
+      highlights: ['No waiting in queues', 'Play with people you know', 'Have multiple games at once']
     },
     {
       icon: BookOpenIcon,
@@ -44,7 +44,7 @@ export const Landing: React.FC = () => {
       icon: UsersIcon,
       title: 'Play with Friends',
       description: 'Start a game with your Magic buddies anytime, anywhere.',
-      vibe: 'Casual games with people you know'
+      vibe: 'Games with people you know'
     },
     {
       icon: BookOpenIcon,
@@ -56,7 +56,7 @@ export const Landing: React.FC = () => {
       icon: CpuChipIcon,
       title: 'Track Your Games',
       description: 'See how your decks perform and remember those epic moments.',
-      vibe: 'No rankings, just good memories'
+      vibe: 'Maintain bragging rights'
     }
   ];
 
@@ -100,12 +100,11 @@ export const Landing: React.FC = () => {
             </div>
             
             <h1 className={`text-5xl font-bold text-white mb-4 ${accentColors.gradientLight} bg-clip-text text-transparent`}>
-              Welcome to Your Magic Table
+              Welcome to ManaForge
             </h1>
             
             <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-              The place to play Magic with your friends online. No rankings, no pressure - 
-              just casual games with the people you actually want to play with.
+              The place to play Magic with your friends online.
             </p>
 
             <div className="flex flex-wrap gap-4 justify-center">
@@ -130,7 +129,7 @@ export const Landing: React.FC = () => {
       <div className="max-w-7xl mx-auto px-8 py-12">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">What Makes This Different</h2>
-          <p className="text-gray-400">Built for casual Magic players who just want to have fun with friends</p>
+          <p className="text-gray-400">Built for Magic players who want a seamless experience</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -161,7 +160,7 @@ export const Landing: React.FC = () => {
       <div className="max-w-7xl mx-auto px-8 py-12">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">What You Can Do Here</h2>
-          <p className="text-gray-400">Everything for your casual Magic games</p>
+          <p className="text-gray-400">Everything for your Magic The Gathering experience</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -186,7 +185,7 @@ export const Landing: React.FC = () => {
         <div className={`bg-gradient-to-r ${accentColors.gradient} rounded-2xl p-8 text-center`}>
           <h2 className="text-3xl font-bold text-white mb-4">Ready to Play Some Magic?</h2>
           <p className="text-lg text-white mb-6 opacity-90">
-            Join your friends for casual games anytime you want. No pressure, just fun.
+            Join your friends for games anytime you want.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
@@ -216,9 +215,6 @@ export const Landing: React.FC = () => {
           </div>
           <div className="text-gray-400 text-sm mb-4">
             Always open • Play with friends anytime
-          </div>
-          <div className="text-gray-500 text-xs">
-            Your online Magic room since 2024
           </div>
         </div>
       </div>
