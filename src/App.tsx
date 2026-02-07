@@ -17,6 +17,15 @@ import { Zone } from './types';
 import { Login } from './pages/Login';
 
 function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
+}
+
+function AppContent() {
+  const currentLocation = useLocation();
   const moveCard = useGameStore((state) => state.moveCard);
   const loadCards = useGameStore((state) => state.loadCards);
   const isLoading = useGameStore((state) => state.isLoading);
@@ -130,11 +139,11 @@ function App() {
       </div>
     );
   }
-
+  
   return (
-    <Router>
+    <>
       {/* Conditionally render hamburger menu - hide on login page */}
-      {useLocation().pathname !== "/login" && <HamburgerMenu />}
+      {currentLocation.pathname !== "/login" && <HamburgerMenu />}
       
       <div className="w-full h-screen overflow-auto">
         <Routes>
@@ -169,7 +178,7 @@ function App() {
         />
       </Routes>
       </div>
-    </Router>
+    </>
   );
 }
 
