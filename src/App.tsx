@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { DndContext, type DragEndEvent, type DragStartEvent, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useGameStore, useCardById } from './store/gameStore';
@@ -13,6 +14,7 @@ import { MyLibrary } from './pages/MyLibrary';
 import Decks from './pages/Decks';
 import DeckBuilder from './pages/DeckBuilder';
 import { Zone } from './types';
+import { Login } from './pages/Login';
 
 function App() {
   const moveCard = useGameStore((state) => state.moveCard);
@@ -131,11 +133,13 @@ function App() {
 
   return (
     <Router>
-      <HamburgerMenu />
+      {/* Conditionally render hamburger menu - hide on login page */}
+      {useLocation().pathname !== "/login" && <HamburgerMenu />}
       
       <div className="w-full h-screen overflow-auto">
         <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />}/>
         <Route path="/library" element={<MyLibrary />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/library/vault" element={<CardVault />} />
