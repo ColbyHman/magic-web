@@ -95,7 +95,7 @@ export const Home: React.FC = () => {
                 <div className={`p-3 ${accentColors.bgPrimary} bg-opacity-20 rounded-xl`}>
                   <SparklesIcon className={`h-7 w-7 ${accentColors.textPrimary}`} />
                 </div>
-                Magic Hub
+                ManaForge
               </h1>
               <p className="text-gray-400 mt-2 text-lg">Build decks, play with friends, track your games</p>
             </div>
