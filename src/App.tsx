@@ -30,7 +30,7 @@ function App() {
 
 function AppContent() {
   const currentLocation = useLocation();
-  const { isLoggedIn, loading: authLoading, user } = useAuth();
+  const { isLoggedIn, loading: authLoading } = useAuth();
   const moveCard = useGameStore((state) => state.moveCard);
   const loadCards = useGameStore((state) => state.loadCards);
   const isLoading = useGameStore((state) => state.isLoading);
