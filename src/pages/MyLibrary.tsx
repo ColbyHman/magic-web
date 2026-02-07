@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 // Sample card data - in a real app this would come from an API or store
@@ -14,6 +15,7 @@ const sampleCards = [
 ];
 
 export const MyLibrary: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedColor, setSelectedColor] = React.useState('All');
 
@@ -39,8 +41,18 @@ export const MyLibrary: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">My Library</h1>
-          <p className="text-gray-300">Browse and manage your card collection</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2">My Library</h1>
+              <p className="text-gray-300">Browse and manage your card collection</p>
+            </div>
+            <button
+              onClick={() => navigate('/library/decks')}
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              🃏 Manage Decks
+            </button>
+          </div>
         </div>
 
         {/* Search and Filters */}

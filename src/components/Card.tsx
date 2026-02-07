@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useDraggable } from '@dnd-kit/core';
-import type { Card as CardType } from '../types';
+import type { GameCard } from '../types';
 import { Zone } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { CardContextMenu } from './CardContextMenu';
@@ -9,7 +9,7 @@ import { CardDetailsModal } from './CardDetailsModal';
 import styles from './Card.module.css';
 
 interface CardProps {
-  card: CardType;
+  card: GameCard;
   isDraggable?: boolean;
   zIndexOverride?: number;
   onHoverChange?: (isHovered: boolean) => void;
@@ -36,7 +36,7 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true,
     transform,
     isDragging,
   } = useDraggable({
-    id: card.id,
+    id: card.instanceId,
     disabled: !isDraggable,
   });
 
@@ -56,7 +56,7 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true,
     }
     
     // Get the card element
-    const element = (setNodeRef as any).current || document.getElementById(`card-${card.id}`);
+    const element = (setNodeRef as any).current || document.getElementById(`card-${card.instanceId}`);
     if (element) {
       // Dispatch synthetic pointer event to start drag
       const rect = element.getBoundingClientRect();
@@ -73,16 +73,16 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true,
   };
 
   const handleTap = () => {
-    tapCard(card.id);
+    tapCard(card.instanceId);
   };
 
   const handleMoveToGraveyard = () => {
-    moveCard(card.id, Zone.GRAVEYARD);
+    moveCard(card.instanceId, Zone.GRAVEYARD);
   };
 
   const handleExile = () => {
     // For now, exile to graveyard (you can add a separate EXILE zone later)
-    moveCard(card.id, Zone.GRAVEYARD);
+    moveCard(card.instanceId, Zone.GRAVEYARD);
   };
 
   const handleViewDetails = () => {
@@ -91,20 +91,20 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true,
   };
 
   const handleAttach = () => {
-    startAttachmentMode(card.id);
+    startAttachmentMode(card.instanceId);
   };
 
   const handleDetach = () => {
-    detachCard(card.id);
+    detachCard(card.instanceId);
   };
 
   // Handle click during attachment mode
   const handleCardClick = (e: React.MouseEvent) => {
     if (attachmentMode.active && attachmentMode.sourceCardId) {
       // Don't attach to self
-      if (card.id !== attachmentMode.sourceCardId) {
+      if (card.instanceId !== attachmentMode.sourceCardId) {
         e.stopPropagation();
-        attachCard(attachmentMode.sourceCardId, card.id);
+        attachCard(attachmentMode.sourceCardId, card.instanceId);
       }
     }
   };
@@ -131,7 +131,7 @@ export const Card: React.FC<CardProps> = React.memo(({ card, isDraggable = true,
     if (card.zone === Zone.BATTLEFIELD || card.zone === Zone.LANDS) {
       e.stopPropagation();
       e.preventDefault();
-      tapCard(card.id);
+      tapCard(card.instanceId);
     }
   };
 
@@ -160,7 +160,7 @@ return (
           setIsHovered(false);
           onHoverChange?.(false);
         }}
-        id={`card-${card.id}`}
+        id={`card-${card.instanceId}`}
         style={{
           ...cardStyle,
           zIndex: zIndexOverride !== undefined ? zIndexOverride : undefined,
@@ -168,7 +168,7 @@ return (
         className={`${styles.card} w-[6vw] h-[8.4vw] max-w-[120px] max-h-[168px] min-w-[80px] min-h-[112px] rounded-lg cursor-pointer shadow-lg overflow-hidden flex-shrink-0 ${
         isDragging ? styles.dragging : ''
       } ${card.tapped ? 'origin-center' : ''} ${
-        attachmentMode.active && isHovered && card.id !== attachmentMode.sourceCardId && card.zone === Zone.BATTLEFIELD
+        attachmentMode.active && isHovered && card.instanceId !== attachmentMode.sourceCardId && card.zone === Zone.BATTLEFIELD
           ? 'ring-4 ring-yellow-400 ring-opacity-80'
           : 'border-2 border-gray-800'
       }`}

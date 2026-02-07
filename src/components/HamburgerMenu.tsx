@@ -84,12 +84,25 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
                   >
                     My Profile
                   </Link>
+                  
+                  <div className="border-t border-gray-600 border-opacity-30 my-4"></div>
+                  
+                  <div className="px-4 py-2 text-gray-400 text-sm font-semibold mb-2">
+                    My Collection
+                  </div>
                   <Link
                     to="/library"
                     onClick={toggleMenu}
-                    className="block px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200"
+                    className="block px-6 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 ml-4"
                   >
                     Card Vault
+                  </Link>
+                  <Link
+                    to="/library/decks"
+                    onClick={toggleMenu}
+                    className="block px-6 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 ml-4"
+                  >
+                    Decks
                   </Link>
                   
                   <div className="border-t border-gray-600 border-opacity-30 my-4"></div>
@@ -100,7 +113,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ className = '' }) 
                   <Link
                     to="/games/battlefield"
                     onClick={toggleMenu}
-                    className="block px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 ml-4"
+                    className="block px-6 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200 ml-4"
                   >
                     Battlefield
                   </Link>

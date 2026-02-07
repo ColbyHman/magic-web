@@ -9,6 +9,9 @@ import { Home } from './pages/Home';
 import { CardVault } from './pages/CardVault';
 import { Game } from './pages/Game';
 import { Profile } from './pages/Profile';
+import { MyLibrary } from './pages/MyLibrary';
+import Decks from './pages/Decks';
+import DeckBuilder from './pages/DeckBuilder';
 import { Zone } from './types';
 
 function App() {
@@ -86,7 +89,7 @@ function App() {
 
     // Only allow valid zones
     if (Object.values(Zone).includes(targetZone as Zone)) {
-      const card = useGameStore.getState().cards.find(c => c.id === cardId);
+      const card = useGameStore.getState().cards.find(c => c.instanceId === cardId);
       
       // Move the main card
       if (targetZone === Zone.BATTLEFIELD && battlefieldHover) {
@@ -133,8 +136,11 @@ function App() {
       <div className="w-full h-screen overflow-auto">
         <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/library" element={<CardVault />} />
+        <Route path="/library" element={<MyLibrary />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/library/vault" element={<CardVault />} />
+        <Route path="/library/decks" element={<Decks />} />
+        <Route path="/library/decks/:deckId" element={<DeckBuilder />} />
         <Route 
           path="/games/battlefield" 
           element={
