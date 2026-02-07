@@ -8,12 +8,15 @@ import {
   PlusIcon,
   UsersIcon,
   EyeIcon,
-  FireIcon
+  FireIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 import { useAccentColors } from '../utils/useAccentColors';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Home: React.FC = () => {
   const accentColors = useAccentColors();
+  const { logout, user } = useAuth();
 
   // Mock data for the dashboard
   const collectionStats = {
@@ -97,7 +100,7 @@ export const Home: React.FC = () => {
                 </div>
                 ManaForge
               </h1>
-              <p className="text-gray-400 mt-2 text-lg">Build decks, play with friends, track your games</p>
+              <p className="text-gray-400 mt-2 text-lg">Welcome back, {user?.name || user?.email?.split('@')[0] || 'Player'}!</p>
             </div>
             <div className="flex gap-3">
               <Link
@@ -112,6 +115,13 @@ export const Home: React.FC = () => {
               >
                 Play Game
               </Link>
+              <button
+                onClick={logout}
+                className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium flex items-center gap-2"
+              >
+                <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                Logout
+              </button>
             </div>
           </div>
         </div>
