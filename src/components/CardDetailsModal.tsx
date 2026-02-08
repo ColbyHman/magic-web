@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
+import { useAccentColors } from '../utils/useAccentColors';
 
 interface CardDetailsModalProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
   const [cardData, setCardData] = React.useState<ScryfallCard | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const accentColors = useAccentColors();
 
   // Fetch card data when modal opens
   React.useEffect(() => {
@@ -149,7 +151,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
                   <div className="text-red-400 text-lg mb-4">Error: {error}</div>
                   <button
                     onClick={onClose}
-                    className="bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded transition-colors"
+                    className={`${accentColors.buttonPrimary} text-white font-bold py-2 px-6 rounded transition-colors`}
                   >
                     Close
                   </button>

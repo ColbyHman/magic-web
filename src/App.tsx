@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation, Navigate } from 'react-router-dom';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { DndContext, type DragEndEvent, type DragStartEvent, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useGameStore, useCardById } from './store/gameStore';
@@ -6,24 +7,42 @@ import { Card } from './components/Card';
 import { PhaseIndicator } from './components/PhaseIndicator';
 import { HamburgerMenu } from './components/HamburgerMenu';
 import { Home } from './pages/Home';
+import { Landing } from './pages/Landing';
 import { CardVault } from './pages/CardVault';
 import { Game } from './pages/Game';
+import { Profile } from './pages/Profile';
 import { MyLibrary } from './pages/MyLibrary';
 import Decks from './pages/Decks';
 import DeckBuilder from './pages/DeckBuilder';
 import { Zone } from './types';
+import { Login } from './pages/Login';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
+  );
+}
+
+function AppContent() {
+  const currentLocation = useLocation();
+  const { isLoggedIn, loading: authLoading } = useAuth();
   const moveCard = useGameStore((state) => state.moveCard);
   const loadCards = useGameStore((state) => state.loadCards);
   const isLoading = useGameStore((state) => state.isLoading);
   const [activeCard, setActiveCard] = React.useState<string | null>(null);
   const [isContextMenuDrag, setIsContextMenuDrag] = React.useState(false);
 
-  // Load cards from Scryfall on mount
+  // Load cards from Scryfall on mount (only for authenticated users)
   React.useEffect(() => {
-    loadCards();
-  }, [loadCards]);
+    if (isLoggedIn) {
+      loadCards();
+    }
+  }, [loadCards, isLoggedIn]);
 
   // Configure sensors with activation constraints
   const sensors = useSensors(
@@ -116,8 +135,30 @@ function App() {
 
   const activeCardData = useCardById(activeCard || '');
 
-  // Show loading state while cards are being fetched
-  if (isLoading) {
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-950">
+        <div className="text-center">
+          <div className="text-white text-2xl font-bold mb-4">Loading...</div>
+          <div className="text-gray-400 text-sm">Checking authentication</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to home if user is logged in and trying to access landing page
+  if (isLoggedIn && currentLocation.pathname === '/') {
+    return <Navigate to="/home" replace />;
+  }
+
+  // Redirect to landing if user is not logged in and trying to access protected routes
+  if (!isLoggedIn && currentLocation.pathname !== '/' && currentLocation.pathname !== '/login' && currentLocation.pathname !== '/signup') {
+    return <Navigate to="/" replace />;
+  }
+
+  // Show loading state while cards are being fetched (only for authenticated users)
+  if (isLoading && isLoggedIn) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-green-900 via-green-800 to-green-950">
         <div className="text-center">
@@ -127,15 +168,23 @@ function App() {
       </div>
     );
   }
-
+  
   return (
-    <Router>
-      <HamburgerMenu />
+    <>
+      {/* Conditionally render hamburger menu - hide on login and landing pages */}
+      {!['/', '/login', '/signup'].includes(currentLocation.pathname) && <HamburgerMenu />}
       
       <div className="w-full h-screen overflow-auto">
         <Routes>
-        <Route path="/" element={<Home />} />
+        {/* Public routes */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />}/>
+        <Route path="/signup" element={<Login />} /> {/* TODO: Create signup page */}
+        
+        {/* Protected routes */}
+        <Route path="/home" element={<Home />} />
         <Route path="/library" element={<MyLibrary />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/library/vault" element={<CardVault />} />
         <Route path="/library/decks" element={<Decks />} />
         <Route path="/library/decks/:deckId" element={<DeckBuilder />} />
@@ -163,7 +212,7 @@ function App() {
         />
       </Routes>
       </div>
-    </Router>
+    </>
   );
 }
 

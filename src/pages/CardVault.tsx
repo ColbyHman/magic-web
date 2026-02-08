@@ -43,14 +43,6 @@ export const CardVault: React.FC = () => {
   // Apply filters whenever they change
   useEffect(() => {
     if (cards.length > 0) {
-      console.log('Applying filters:', {
-        searchTerm,
-        selectedColor,
-        selectedRarity,
-        selectedType,
-        showFavoritesOnly,
-        totalCards: cards.length
-      });
       
       // Simple test: just return all cards for now
       let filtered = cards;
