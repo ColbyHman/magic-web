@@ -127,6 +127,15 @@ export interface Deck {
   cardCount: number;
   isFavorite?: boolean;
   tags?: string[];
+  folderId?: string | null;
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  parentId: string | null;
+  createdAt: Date;
+  color?: string;
 }
 
 export interface DeckStats {
