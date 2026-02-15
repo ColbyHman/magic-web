@@ -77,7 +77,10 @@ export default function CompactCardRow({
         </button>
         <button
           className={styles.removeCardBtn}
-          onClick={() => onRemove(entry.card.scryfallId)}
+          onClick={() => {
+            onHoverEnd();
+            onRemove(entry.card.scryfallId);
+          }}
           title="Remove card"
         >
           ×
@@ -89,7 +92,10 @@ export default function CompactCardRow({
         position={contextMenuPos}
         onClose={() => setShowContextMenu(false)}
         onSetCommander={canBeCommander ? () => onSetCommander(entry.card.scryfallId) : undefined}
-        onRemove={() => onRemove(entry.card.scryfallId)}
+        onRemove={() => {
+          onHoverEnd();
+          onRemove(entry.card.scryfallId);
+        }}
         onViewDetails={() => {
           // Could add card details modal here if needed
         }}
